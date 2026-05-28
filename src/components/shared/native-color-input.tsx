@@ -2,7 +2,7 @@ import { FormControl, FormLabel, HStack, Input } from "@chakra-ui/react";
 
 const HEX_RE = /^#[0-9A-Fa-f]{6}$/;
 
-const toPickerHex = (value: string) => (HEX_RE.test(value) ? value : "#09090b");
+const toPickerHex = (value: string) => (HEX_RE.test(value) ? value : "#131317");
 
 type Props = {
   label?: string;
@@ -41,7 +41,7 @@ const NativeColorInput = ({ label, value, onChange, allowGradient = true }: Prop
         flex={1}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={allowGradient ? "#09090b or linear-gradient(...)" : "#09090b"}
+        placeholder={allowGradient ? "#131317 or linear-gradient(...)" : "#131317"}
       />
     </HStack>
   </FormControl>

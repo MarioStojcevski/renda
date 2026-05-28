@@ -23,12 +23,24 @@ import type { UserMediaAsset } from "../../../types/user-media";
 import PopoverComponent from "../../shared/popover";
 import { rendaMediaTypes } from "../../shared/popover/utils/popover-types";
 
+const formatDuration = (sec: number) => {
+  const total = Math.max(0, Math.round(sec));
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${m}:${s.toString().padStart(2, "0")}`;
+};
+
 const MediaPanel = () => {
   const fileRef = useRef<HTMLInputElement>(null);
   const { userMedia, addUserMediaFiles, removeUserMedia } = useEditorUi();
-  const { addComponent } = useTimeline();
+  const { addComponent, addAudio, playheadFrame } = useTimeline();
 
   const addAssetToScene = (asset: UserMediaAsset) => {
+    if (asset.kind === "audio") {
+      addAudio(asset.src, playheadFrame, asset.durationSec ?? 5);
+      return;
+    }
+
     if (asset.kind === "gif") {
       addComponent({
         id: uuid(),
@@ -102,7 +114,7 @@ const MediaPanel = () => {
             p={4}
           >
             <Text fontSize="xs" color="text.muted" textAlign="center">
-              Upload PNG, SVG, JPG, or GIF. Click an item to add it to the scene.
+              Upload PNG, SVG, JPG, GIF, or audio (MP3/WAV/OGG). Click an item to add it.
             </Text>
           </Flex>
         ) : (
@@ -114,26 +126,40 @@ const MediaPanel = () => {
                   position="relative"
                   role="button"
                   tabIndex={0}
-                  borderRadius="md"
+                  borderRadius="control"
                   border="1px solid"
                   borderColor="border.subtle"
-                  bg="blackAlpha.400"
+                  bg="bg.subtle"
                   overflow="hidden"
                   cursor="pointer"
-                  _hover={{ borderColor: "brand.400" }}
+                  transition="border-color 120ms ease, background 120ms ease"
+                  _hover={{ borderColor: "accent", bg: "bg.hover" }}
                   onClick={() => addAssetToScene(asset)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") addAssetToScene(asset);
                   }}
                 >
                   <Box h="72px" display="flex" alignItems="center" justifyContent="center" p={1}>
-                    <Image
-                      src={asset.src}
-                      alt={asset.name}
-                      maxH="100%"
-                      maxW="100%"
-                      objectFit="contain"
-                    />
+                    {asset.kind === "audio" ? (
+                      <Flex direction="column" align="center" justify="center" gap={1}>
+                        <Text fontSize="2xl" lineHeight={1} color="accent">
+                          ♪
+                        </Text>
+                        {asset.durationSec != null && (
+                          <Text fontSize="10px" color="text.muted" sx={{ fontVariantNumeric: "tabular-nums" }}>
+                            {formatDuration(asset.durationSec)}
+                          </Text>
+                        )}
+                      </Flex>
+                    ) : (
+                      <Image
+                        src={asset.src}
+                        alt={asset.name}
+                        maxH="100%"
+                        maxW="100%"
+                        objectFit="contain"
+                      />
+                    )}
                   </Box>
                   <Text fontSize="10px" px={2} py={1} noOfLines={1} color="text.muted">
                     {asset.name}

@@ -49,7 +49,8 @@ const ResizeHandle = ({ axis, onResize }: Props) => {
       h={axis === "horizontal" ? "100%" : "6px"}
       cursor={axis === "horizontal" ? "col-resize" : "row-resize"}
       bg="transparent"
-      _hover={{ bg: "whiteAlpha.100" }}
+      _hover={{ bg: "bg.hover" }}
+      transition="background 120ms ease"
       onMouseDown={onMouseDown}
       role="separator"
       aria-orientation={axis === "horizontal" ? "vertical" : "horizontal"}

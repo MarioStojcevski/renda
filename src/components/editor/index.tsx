@@ -66,7 +66,7 @@ export default function Editor() {
               w={`${mediaWidth}px`}
               flexShrink={0}
               borderRight="1px solid"
-              borderColor="border.subtle"
+              borderColor="border.divider"
               bg="bg.surface"
               overflow="hidden"
               display="flex"
@@ -109,7 +109,7 @@ export default function Editor() {
                       overflowY="auto"
                       p={2}
                       borderLeft="1px solid"
-                      borderColor="border.subtle"
+                      borderColor="border.divider"
                       bg="bg.surface"
                     >
                       <ComponentInspector />

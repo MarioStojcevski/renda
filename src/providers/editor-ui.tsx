@@ -20,7 +20,37 @@ const DEFAULT_PANELS: PanelVisibility = {
   timeline: true,
 };
 
-const ACCEPT_MEDIA = "image/png,image/svg+xml,image/jpeg,image/webp,image/gif";
+const ACCEPT_IMAGE = "image/png,image/svg+xml,image/jpeg,image/webp,image/gif";
+const ACCEPT_AUDIO = "audio/mpeg,audio/mp3,audio/wav,audio/ogg,audio/webm,audio/aac,audio/flac,audio/x-m4a,audio/mp4";
+const ACCEPT_MEDIA = `${ACCEPT_IMAGE},${ACCEPT_AUDIO}`;
+
+const classifyFile = (file: File): UserMediaAsset["kind"] | null => {
+  if (file.type.startsWith("audio/")) return "audio";
+  if (file.type === "image/gif") return "gif";
+  if (file.type.startsWith("image/")) return "image";
+  return null;
+};
+
+const probeAudioDuration = (src: string): Promise<number | undefined> =>
+  new Promise((resolve) => {
+    const audio = new Audio();
+    audio.preload = "metadata";
+    const cleanup = () => {
+      audio.removeEventListener("loadedmetadata", onLoad);
+      audio.removeEventListener("error", onError);
+    };
+    const onLoad = () => {
+      cleanup();
+      resolve(Number.isFinite(audio.duration) ? audio.duration : undefined);
+    };
+    const onError = () => {
+      cleanup();
+      resolve(undefined);
+    };
+    audio.addEventListener("loadedmetadata", onLoad);
+    audio.addEventListener("error", onError);
+    audio.src = src;
+  });
 
 type EditorUiContextValue = {
   panels: PanelVisibility;
@@ -47,14 +77,32 @@ export const EditorUiProvider = ({ children }: { children: ReactNode }) => {
 
   const addUserMediaFiles = useCallback((files: FileList | File[]) => {
     const list = Array.from(files);
-    const added: UserMediaAsset[] = list.map((file) => ({
-      id: uuid(),
-      src: URL.createObjectURL(file),
-      name: file.name,
-      kind: file.type === "image/gif" ? "gif" : "image",
-      createdAt: Date.now(),
-    }));
+    const added: UserMediaAsset[] = [];
+    for (const file of list) {
+      const kind = classifyFile(file);
+      if (!kind) continue;
+      added.push({
+        id: uuid(),
+        src: URL.createObjectURL(file),
+        name: file.name,
+        kind,
+        createdAt: Date.now(),
+      });
+    }
+    if (added.length === 0) return added;
+
     setUserMedia((prev) => [...added, ...prev]);
+
+    for (const asset of added) {
+      if (asset.kind !== "audio") continue;
+      probeAudioDuration(asset.src).then((durationSec) => {
+        if (durationSec == null) return;
+        setUserMedia((prev) =>
+          prev.map((a) => (a.id === asset.id ? { ...a, durationSec } : a))
+        );
+      });
+    }
+
     return added;
   }, []);
 
@@ -91,4 +139,4 @@ export const useEditorUi = () => {
   return ctx;
 };
 
-export { ACCEPT_MEDIA };
+export { ACCEPT_AUDIO, ACCEPT_IMAGE, ACCEPT_MEDIA };

@@ -136,10 +136,10 @@ export default function PreviewPanel() {
       minH={0}
       minW={0}
       position="relative"
-      bg="black"
-      borderRadius="md"
+      bg="bg.preview"
+      borderRadius="panel"
       border="1px solid"
-      borderColor="border.subtle"
+      borderColor="border.divider"
       overflow="hidden"
       display="flex"
       alignItems="center"
@@ -178,7 +178,7 @@ export default function PreviewPanel() {
           <Box
             position="absolute"
             inset={0}
-            bg="#18181b"
+            bg="bg.preview"
             w={`${COMPOSITION_WIDTH}px`}
             h={`${COMPOSITION_HEIGHT}px`}
           >

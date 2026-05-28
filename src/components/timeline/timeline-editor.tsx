@@ -77,8 +77,8 @@ const TimelineEditor = () => {
     <Box
       bg="bg.surface"
       border="1px solid"
-      borderColor="border.subtle"
-      borderRadius="md"
+      borderColor="border.divider"
+      borderRadius="panel"
       overflow="hidden"
       flex={1}
       minH={0}
@@ -154,7 +154,7 @@ const TimelineEditor = () => {
                   left={`${sec * FPS * PX_PER_FRAME}px`}
                   h="100%"
                   borderLeft="1px solid"
-                  borderColor="whiteAlpha.200"
+                  borderColor="border.subtle"
                   pl={1}
                 >
                   <Text fontSize="10px" color="text.muted">
@@ -171,10 +171,10 @@ const TimelineEditor = () => {
               bottom={0}
               left={`${playheadFrame * PX_PER_FRAME}px`}
               w="2px"
-              bg="brand.400"
+              bg="accent.hover"
               zIndex={3}
               pointerEvents="none"
-              boxShadow="0 0 8px rgba(45,212,191,0.6)"
+              boxShadow="0 0 8px rgba(45, 212, 191, 0.6)"
             />
 
             {/* Video track */}
@@ -193,10 +193,10 @@ const TimelineEditor = () => {
                     w={`${w}px`}
                     h="36px"
                     mx="1px"
-                    bg={selected ? "brand.600" : "brand.800"}
+                    bg={selected ? "accent.muted" : "brand.800"}
                     border="1px solid"
-                    borderColor={selected ? "brand.300" : "whiteAlpha.300"}
-                    borderRadius="md"
+                    borderColor={selected ? "accent.hover" : "border.strong"}
+                    borderRadius="control"
                     cursor="pointer"
                     display="flex"
                     alignItems="center"
@@ -266,10 +266,10 @@ const TimelineEditor = () => {
                     left={`${left}px`}
                     w={`${Math.max(w, 40)}px`}
                     h="40px"
-                    bg={selected ? "whiteAlpha.300" : "whiteAlpha.100"}
+                    bg={selected ? "bg.active" : "bg.subtle"}
                     border="1px solid"
-                    borderColor={selected ? "brand.400" : "whiteAlpha.200"}
-                    borderRadius="md"
+                    borderColor={selected ? "accent" : "border.subtle"}
+                    borderRadius="control"
                     overflow="hidden"
                     cursor="pointer"
                     onClick={(e) => {

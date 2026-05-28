@@ -28,10 +28,10 @@ const PopoverComponent = ({ type }: { type: RendaMediaType }) => (
         {type}
       </Button>
     </PopoverTrigger>
-    <PopoverContent bg="bg.elevated" borderColor="border.subtle" w="260px">
+    <PopoverContent w="260px">
       <PopoverArrow bg="bg.elevated" />
       <PopoverCloseButton />
-      <PopoverHeader borderColor="border.subtle" fontSize="sm" py={2}>
+      <PopoverHeader fontSize="sm" py={2}>
         Add {type}
       </PopoverHeader>
       <PopoverBody pb={4}>{forms[type]}</PopoverBody>

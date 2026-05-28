@@ -196,7 +196,7 @@ const RenderDialog = ({ isOpen, timeline, onClose }: Props) => {
       isCentered
     >
       <ModalOverlay />
-      <ModalContent bg="bg.elevated" borderColor="border.subtle" borderWidth="1px">
+      <ModalContent>
         <ModalHeader fontSize="md">Rendering video</ModalHeader>
         <ModalBody>
           <VStack align="stretch" spacing={4}>

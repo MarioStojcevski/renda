@@ -1,3 +1,52 @@
+/*
+ * renda — dark-only design tokens (CSS variable mirror).
+ *
+ * Keep these values in sync with the Chakra theme in `src/theme.ts`. Use the
+ * variables for any plain-CSS or inline-style code outside of Chakra props.
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* Surfaces */
+  --renda-bg-app: #131317;
+  --renda-bg-canvas: #131317;
+  --renda-bg-surface: #232328;
+  --renda-bg-subtle: #1a1a1e;
+  --renda-bg-elevated: #2d2d33;
+  --renda-bg-preview: #0a0a0c;
+  --renda-bg-hover: rgba(255, 255, 255, 0.05);
+  --renda-bg-active: rgba(255, 255, 255, 0.09);
+  --renda-bg-selected: rgba(20, 184, 166, 0.18);
+  --renda-bg-scrim: rgba(0, 0, 0, 0.6);
+
+  /* Borders */
+  --renda-border-divider: #0e0e11;
+  --renda-border-subtle: rgba(255, 255, 255, 0.08);
+  --renda-border-strong: rgba(255, 255, 255, 0.16);
+
+  /* Text */
+  --renda-text-primary: #e6e6ea;
+  --renda-text-secondary: #b8b8c0;
+  --renda-text-muted: #8b8b94;
+  --renda-text-disabled: #5a5a62;
+
+  /* Accent */
+  --renda-accent: #14b8a6;
+  --renda-accent-hover: #2dd4bf;
+  --renda-accent-muted: #0f766e;
+  --renda-accent-subtle: rgba(20, 184, 166, 0.16);
+
+  /* Status */
+  --renda-danger: #ef4444;
+  --renda-warning: #f59e0b;
+  --renda-success: #22c55e;
+
+  /* Radii */
+  --renda-radius-control: 6px;
+  --renda-radius-panel: 8px;
+}
+
 *,
 *::before,
 *::after {
@@ -12,5 +61,35 @@ body,
 
 body {
   margin: 0;
+  background: var(--renda-bg-canvas);
+  color: var(--renda-text-primary);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+/* Custom scrollbar — matches Chakra global styles, also covers raw DOM nodes
+   that render before Chakra mounts (or live outside the React tree). */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.16);
+  background-clip: content-box;
+}
+
+* {
+  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+  scrollbar-width: thin;
 }

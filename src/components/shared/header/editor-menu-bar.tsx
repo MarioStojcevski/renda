@@ -103,7 +103,7 @@ const EditorMenuBar = () => {
         <MenuButton as={Button} {...menuButtonProps}>
           File
         </MenuButton>
-        <MenuList minW="200px" bg="bg.elevated" borderColor="border.subtle">
+        <MenuList minW="200px">
           <MenuItem fontSize="sm" onClick={() => importRef.current?.click()}>
             Import project…
           </MenuItem>
@@ -121,7 +121,7 @@ const EditorMenuBar = () => {
         <MenuButton as={Button} {...menuButtonProps}>
           View
         </MenuButton>
-        <MenuList minW="200px" bg="bg.elevated" borderColor="border.subtle">
+        <MenuList minW="200px">
           {(Object.keys(PANEL_LABELS) as PanelId[]).map((id) => (
             <MenuItem key={id} fontSize="sm" closeOnSelect={false}>
               <Checkbox

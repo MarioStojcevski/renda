@@ -1,7 +1,6 @@
 import { Box, Flex, HStack, Link, Text } from "@chakra-ui/react";
 import { Link as RouterLink, useLocation } from "react-router-dom";
 
-import DarkModeSwitch from "../light-dark-switch";
 import Logo from "../logo";
 import EditorMenuBar from "./editor-menu-bar";
 
@@ -14,7 +13,7 @@ const Header = () => {
       as="header"
       h={10}
       borderBottom="1px solid"
-      borderColor="border.subtle"
+      borderColor="border.divider"
       bg="bg.surface"
       px={3}
     >
@@ -29,7 +28,12 @@ const Header = () => {
             _hover={{ textDecoration: "none" }}
           >
             <Logo w={7} h={7} color="accent" />
-            <Text fontWeight="semibold" fontSize="sm" letterSpacing="-0.02em">
+            <Text
+              fontWeight="semibold"
+              fontSize="sm"
+              letterSpacing="-0.02em"
+              color="text.primary"
+            >
               renda
             </Text>
           </Link>
@@ -42,17 +46,15 @@ const Header = () => {
               to="/about"
               px={2}
               py={1}
-              borderRadius="md"
+              borderRadius="control"
               fontSize="sm"
               color="text.muted"
-              _hover={{ color: "chakra-body-text", textDecoration: "none" }}
+              _hover={{ color: "text.primary", textDecoration: "none" }}
             >
               About
             </Link>
           )}
         </HStack>
-
-        <DarkModeSwitch />
       </Flex>
     </Box>
   );
