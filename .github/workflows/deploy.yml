@@ -45,10 +45,8 @@ jobs:
       - name: Add SPA fallback (404 -> index.html for client-side routing)
         run: cp apps/app/dist/index.html apps/app/dist/404.html
 
-      - name: Configure Pages
+      - name: Setup Pages
         uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
