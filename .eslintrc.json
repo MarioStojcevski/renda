@@ -6,7 +6,7 @@
   "extends": ["plugin:react/recommended", "standard-with-typescript"],
   "overrides": [
     {
-      "files": ["src/remotion/*.{ts,tsx}"],
+      "files": ["packages/composition/src/**/*.{ts,tsx}"],
       "extends": ["plugin:@remotion/recommended"]
     }
   ],

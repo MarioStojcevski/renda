@@ -1,0 +1,26 @@
+{
+  "name": "@renda/composition",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./*": "./src/*"
+  },
+  "scripts": {
+    "remotion:studio": "remotion studio src/index.ts",
+    "remotion:render": "remotion render src/index.ts scenes ../../out/video.mp4"
+  },
+  "dependencies": {
+    "@renda/shared": "*",
+    "@remotion/gif": "4.0.467",
+    "@remotion/lottie": "4.0.467",
+    "lottie-web": "^5.12.2",
+    "react": "^18.3.1",
+    "remotion": "4.0.467"
+  },
+  "devDependencies": {
+    "@remotion/cli": "4.0.467",
+    "@types/react": "^18.3.3",
+    "typescript": "^5.5.4"
+  }
+}

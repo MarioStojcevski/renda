@@ -30,4 +30,4 @@ lerna-debug.log*
 *.sw?
 
 # TypeScript
-tsconfig.tsbuildinfo
+*.tsbuildinfo
