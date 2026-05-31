@@ -7,9 +7,12 @@ import ResizeHandle from "../shared/resize-handle";
 import ComponentInspector from "../inspector/component-inspector";
 import LoadingSpinner from "../shared/loading-spinner";
 import TimelineEditor from "../timeline/timeline-editor";
+import TimelineControlBar from "../timeline/timeline-control-bar";
 import MediaPanel from "./components/media-panel";
+import AiPanel from "./components/ai-panel";
 import PreviewPanel from "./preview-panel";
 
+const ZOOM_STEPS = [0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4];
 const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
 
 const isTypingTarget = (target: EventTarget | null) => {
@@ -24,37 +27,59 @@ const isTypingTarget = (target: EventTarget | null) => {
 };
 
 export default function Editor() {
-  const { timeline, togglePlayback } = useTimeline();
+  const { timeline, togglePlayback, selection, clearSelection } = useTimeline();
   const { panels } = useEditorUi();
-  const hasScenes = timeline.VideoTrack.length > 0;
+  const hasContent = timeline.lanes.some((l) => l.components.length > 0);
 
-  const [mediaWidth, setMediaWidth] = useState(260);
-  const [inspectorWidth, setInspectorWidth] = useState(280);
-  const [timelineHeight, setTimelineHeight] = useState(200);
+  const [leftWidth, setLeftWidth] = useState(260);
+  const [rightWidth, setRightWidth] = useState(280);
+  const [timelineHeight, setTimelineHeight] = useState(240);
+  const [zoom, setZoom] = useState(1);
 
-  const resizeMedia = useCallback((d: number) => {
-    setMediaWidth((w) => clamp(w + d, 220, 420));
+  const showSelection = selection?.kind === "component";
+
+  const resizeLeft = useCallback((d: number) => {
+    setLeftWidth((w) => clamp(w + d, 220, 420));
   }, []);
-  const resizeInspector = useCallback((d: number) => {
-    setInspectorWidth((w) => clamp(w - d, 220, 480));
+  const resizeRight = useCallback((d: number) => {
+    setRightWidth((w) => clamp(w - d, 220, 480));
   }, []);
   const resizeTimeline = useCallback((d: number) => {
     setTimelineHeight((h) => clamp(h - d, 120, 400));
   }, []);
 
+  const zoomIn = useCallback(() => {
+    setZoom((z) => {
+      const next = ZOOM_STEPS.find((s) => s > z);
+      return next ?? z;
+    });
+  }, []);
+
+  const zoomOut = useCallback(() => {
+    setZoom((z) => {
+      const prev = [...ZOOM_STEPS].reverse().find((s) => s < z);
+      return prev ?? z;
+    });
+  }, []);
+
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.code !== "Space" || e.repeat) return;
       if (isTypingTarget(e.target)) return;
-      e.preventDefault();
-      togglePlayback();
+      if (e.code === "Space" && !e.repeat) {
+        e.preventDefault();
+        togglePlayback();
+        return;
+      }
+      if (e.code === "Escape") {
+        clearSelection();
+      }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [togglePlayback]);
+  }, [togglePlayback, clearSelection]);
 
   const showMedia = panels.media;
-  const showInspector = panels.inspector;
+  const showAi = panels.ai;
   const showTimeline = panels.timeline;
 
   return (
@@ -63,7 +88,7 @@ export default function Editor() {
         {showMedia && (
           <>
             <Box
-              w={`${mediaWidth}px`}
+              w={`${leftWidth}px`}
               flexShrink={0}
               borderRight="1px solid"
               borderColor="border.divider"
@@ -73,46 +98,36 @@ export default function Editor() {
               flexDirection="column"
               p={3}
             >
-              <Text
-                fontSize="xs"
-                fontWeight="semibold"
-                color="text.muted"
-                textTransform="uppercase"
-                mb={3}
-                flexShrink={0}
-              >
-                Media
-              </Text>
               <Box flex={1} minH={0} overflow="hidden">
-                <MediaPanel />
+                {showSelection ? <ComponentInspector /> : <MediaPanel />}
               </Box>
             </Box>
-            <ResizeHandle axis="horizontal" onResize={resizeMedia} />
+            <ResizeHandle axis="horizontal" onResize={resizeLeft} />
           </>
         )}
 
         <Flex flex={1} direction="column" minW={0} overflow="hidden">
-          {hasScenes ? (
+          {hasContent ? (
             <>
               <Flex flex={1} minH={0} overflow="hidden">
-                <Box flex={1} minW={0} p={2} display="flex">
+                <Flex flex={1} minW={0} p={2} direction="column">
                   <PreviewPanel />
-                </Box>
+                  <TimelineControlBar zoom={zoom} onZoomIn={zoomIn} onZoomOut={zoomOut} />
+                </Flex>
 
-                {showInspector && (
+                {showAi && (
                   <>
-                    <ResizeHandle axis="horizontal" onResize={resizeInspector} />
+                    <ResizeHandle axis="horizontal" onResize={resizeRight} />
                     <Box
-                      w={`${inspectorWidth}px`}
+                      w={`${rightWidth}px`}
                       flexShrink={0}
-                      minH={0}
                       overflowY="auto"
                       p={2}
                       borderLeft="1px solid"
                       borderColor="border.divider"
                       bg="bg.surface"
                     >
-                      <ComponentInspector />
+                      <AiPanel />
                     </Box>
                   </>
                 )}
@@ -130,7 +145,7 @@ export default function Editor() {
                     display="flex"
                     flexDirection="column"
                   >
-                    <TimelineEditor />
+                    <TimelineEditor zoom={zoom} />
                   </Box>
                 </>
               )}
@@ -138,11 +153,11 @@ export default function Editor() {
           ) : (
             <Flex flex={1} align="center" justify="center" direction="column" gap={3} p={4}>
               <Text color="text.muted" fontSize="sm" textAlign="center">
-                Add a scene from the timeline (View → Timeline), then press Space or ▶ to play.
+                Add components from the media panel, then press Space or ▶ to play.
               </Text>
               {showTimeline && (
                 <Box w="full" maxW="960px" h={`${timelineHeight}px`}>
-                  <TimelineEditor />
+                  <TimelineEditor zoom={zoom} />
                 </Box>
               )}
             </Flex>

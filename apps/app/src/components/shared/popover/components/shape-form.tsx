@@ -10,16 +10,19 @@ import { useState } from "react";
 import { v4 as uuid } from "uuid";
 
 import { defaultShapeStyles } from "@renda/shared/lib/component-defaults";
+import { FPS } from "@renda/shared/lib/video";
 import type { ShapeKind } from "@renda/shared/types/components/shape-component";
 import { useTimeline } from "../../../../providers/timeline";
 
 const ShapeForm = () => {
-  const { addComponent } = useTimeline();
+  const { addComponent, timeline, playheadFrame } = useTimeline();
   const [shape, setShape] = useState<ShapeKind>("rectangle");
   const [fill, setFill] = useState("#14b8a6");
   const [stroke, setStroke] = useState("#0f766e");
 
   const handleAdd = () => {
+    const videoLane = timeline.lanes.find((l) => l.type === "video");
+    if (!videoLane) return;
     addComponent({
       id: uuid(),
       type: "Shape",
@@ -27,11 +30,13 @@ const ShapeForm = () => {
       fill,
       stroke,
       strokeWidth: shape === "line" ? 4 : 2,
+      startFrame: playheadFrame,
+      duration: FPS * 5,
       divStyles: {
         ...defaultShapeStyles,
         ...(shape === "line" ? { height: 4, width: 320 } : {}),
       },
-    });
+    }, videoLane.id);
   };
 
   return (

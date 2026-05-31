@@ -24,6 +24,7 @@ const PANEL_LABELS: Record<PanelId, string> = {
   media: "Media",
   inspector: "Inspector",
   timeline: "Timeline",
+  ai: "AI",
 };
 
 const EditorMenuBar = () => {
@@ -56,10 +57,10 @@ const EditorMenuBar = () => {
   };
 
   const handleSave = () => {
-    if (!timeline.VideoTrack.length) {
+    if (!timeline.lanes.some((l) => l.components.length > 0)) {
       toast({
         status: "warning",
-        title: "Add at least one scene before saving.",
+        title: "Add at least one component before saving.",
         duration: 2500,
       });
       return;
@@ -70,10 +71,10 @@ const EditorMenuBar = () => {
   };
 
   const handleRender = () => {
-    if (!timeline.VideoTrack.length) {
+    if (!timeline.lanes.some((l) => l.components.length > 0)) {
       toast({
         status: "warning",
-        title: "Add at least one scene before rendering.",
+        title: "Add at least one component before rendering.",
         duration: 2500,
       });
       return;
@@ -122,7 +123,7 @@ const EditorMenuBar = () => {
           View
         </MenuButton>
         <MenuList minW="200px">
-          {(Object.keys(PANEL_LABELS) as PanelId[]).map((id) => (
+          {(Object.keys(PANEL_LABELS) as PanelId[]).filter((id) => id !== "inspector").map((id) => (
             <MenuItem key={id} fontSize="sm" closeOnSelect={false}>
               <Checkbox
                 size="sm"

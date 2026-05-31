@@ -1,22 +1,19 @@
-import type { CSSProperties } from "react";
 import type { VideoComposition } from "../../types/video-composition";
 
-export const editComponent = ({
+export const moveComponent = ({
   timeline,
   componentId,
-  divStyles,
+  newStartFrame,
 }: {
   timeline: VideoComposition;
   componentId: string;
-  divStyles: CSSProperties;
+  newStartFrame: number;
 }): VideoComposition => ({
   ...timeline,
   lanes: timeline.lanes.map((lane) => ({
     ...lane,
     components: lane.components.map((c) =>
-      c.id === componentId
-        ? { ...c, divStyles: { ...c.divStyles, ...divStyles } }
-        : c
+      c.id === componentId ? { ...c, startFrame: Math.max(0, newStartFrame) } : c
     ),
   })),
 });

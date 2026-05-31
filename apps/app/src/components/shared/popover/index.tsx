@@ -28,7 +28,7 @@ const PopoverComponent = ({ type }: { type: RendaMediaType }) => (
         {type}
       </Button>
     </PopoverTrigger>
-    <PopoverContent w="260px">
+    <PopoverContent w="260px" zIndex={9999}>
       <PopoverArrow bg="bg.elevated" />
       <PopoverCloseButton />
       <PopoverHeader fontSize="sm" py={2}>

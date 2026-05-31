@@ -1,18 +1,15 @@
-import type { SceneComponentType } from "../types/scene-component";
+import type { TimedComponent } from "../types/timed-component";
 
-const zIndex = (c: SceneComponentType) => {
-  const z = c.divStyles?.zIndex;
-  if (typeof z === "number") return z;
-  if (c.type === "Background") return 0;
-  return 1;
+const Z_ORDER: Record<string, number> = {
+  Background: 0,
+  SlotMachine: 1,
+  Shape: 2,
+  Video: 3,
+  Image: 4,
+  Gif: 5,
+  Lottie: 6,
+  Text: 7,
 };
 
-/** Backgrounds first, then ascending z-index. */
-export const sortComponentsForRender = (
-  components: SceneComponentType[]
-): SceneComponentType[] =>
-  [...components].sort((a, b) => {
-    if (a.type === "Background" && b.type !== "Background") return -1;
-    if (b.type === "Background" && a.type !== "Background") return 1;
-    return zIndex(a) - zIndex(b);
-  });
+export const sortComponentsForRender = (components: TimedComponent[]): TimedComponent[] =>
+  [...components].sort((a, b) => (Z_ORDER[a.type] ?? 99) - (Z_ORDER[b.type] ?? 99));

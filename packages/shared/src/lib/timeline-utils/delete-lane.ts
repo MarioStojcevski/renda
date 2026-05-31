@@ -1,12 +1,12 @@
 import type { VideoComposition } from "../../types/video-composition";
 
-export const deleteScene = ({
+export const deleteLane = ({
   timeline,
-  sceneId,
+  laneId,
 }: {
   timeline: VideoComposition;
-  sceneId: string;
+  laneId: string;
 }): VideoComposition => ({
   ...timeline,
-  VideoTrack: timeline.VideoTrack.filter((scene) => scene.id !== sceneId),
+  lanes: timeline.lanes.filter((lane) => lane.id !== laneId),
 });

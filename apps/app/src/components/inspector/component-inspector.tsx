@@ -18,7 +18,6 @@ import {
   findComponent,
   formatTimecode,
   framesToSeconds,
-  getSceneAtPlayhead,
   secondsToFrames,
 } from "@renda/shared/lib/timeline-math";
 import {
@@ -44,90 +43,38 @@ const ComponentInspector = () => {
     updateKeyframe,
     deleteKeyframe,
     clearSelection,
-    updateSceneDuration,
-    updateAudioSegment,
-    removeAudio,
+    deleteLane,
   } = useTimeline();
 
   if (!selection) {
     return (
       <Panel title="Inspector" flex={1}>
         <Text fontSize="sm" color="text.muted">
-          Select a component, scene, or audio clip to edit.
+          Select a component or lane to edit.
         </Text>
       </Panel>
     );
   }
 
-  if (selection.kind === "scene") {
-    const scene = timeline.VideoTrack.find((s) => s.id === selection.id);
-    if (!scene) return null;
+  if (selection.kind === "lane") {
+    const lane = timeline.lanes.find((l) => l.id === selection.id);
+    if (!lane) return null;
     return (
-      <Panel title="Scene" flex={1}>
+      <Panel title="Lane" flex={1}>
         <VStack align="stretch" spacing={3}>
           <FormControl>
-            <FormLabel fontSize="xs">Duration (s)</FormLabel>
-            <NumberInput
-              size="sm"
-              value={framesToSeconds(scene.duration)}
-              min={0.5}
-              step={0.1}
-              onChange={(_, n) => {
-                if (Number.isFinite(n)) updateSceneDuration(scene.id, secondsToFrames(n));
-              }}
-            >
-              <NumberInputField />
-            </NumberInput>
+            <FormLabel fontSize="xs">Name</FormLabel>
+            <Text fontSize="sm">{lane.name}</Text>
           </FormControl>
+          <FormControl>
+            <FormLabel fontSize="xs">Type</FormLabel>
+            <Text fontSize="sm" textTransform="capitalize">{lane.type}</Text>
+          </FormControl>
+          <Button size="sm" colorScheme="red" variant="outline" onClick={() => deleteLane(lane.id)}>
+            Delete lane
+          </Button>
           <Button size="sm" variant="ghost" onClick={clearSelection}>
             Deselect
-          </Button>
-        </VStack>
-      </Panel>
-    );
-  }
-
-  if (selection.kind === "audio") {
-    const segment = timeline.AudioTrack.find((s) => s.id === selection.id);
-    if (!segment) return null;
-    const clipDuration = segment.endFrame - segment.startFrame;
-    return (
-      <Panel title="Audio" flex={1}>
-        <VStack align="stretch" spacing={3}>
-          <FormControl>
-            <FormLabel fontSize="xs">Start (s)</FormLabel>
-            <NumberInput
-              size="sm"
-              value={framesToSeconds(segment.from)}
-              min={0}
-              step={0.1}
-              onChange={(_, n) => {
-                if (Number.isFinite(n)) updateAudioSegment(segment.id, { from: secondsToFrames(n) });
-              }}
-            >
-              <NumberInputField />
-            </NumberInput>
-          </FormControl>
-          <FormControl>
-            <FormLabel fontSize="xs">Duration (s)</FormLabel>
-            <NumberInput
-              size="sm"
-              value={framesToSeconds(clipDuration)}
-              min={0.5}
-              step={0.1}
-              onChange={(_, n) => {
-                if (Number.isFinite(n)) {
-                  updateAudioSegment(segment.id, {
-                    endFrame: segment.startFrame + secondsToFrames(n),
-                  });
-                }
-              }}
-            >
-              <NumberInputField />
-            </NumberInput>
-          </FormControl>
-          <Button size="sm" colorScheme="red" variant="outline" onClick={() => removeAudio(segment.id)}>
-            Remove audio
           </Button>
         </VStack>
       </Panel>
@@ -138,8 +85,6 @@ const ComponentInspector = () => {
   if (!found) return null;
 
   const { component } = found;
-  const sceneCtx = getSceneAtPlayhead(timeline.VideoTrack, playheadFrame);
-  const localFrame = sceneCtx?.sceneLocalFrame ?? 0;
   const styles = component.divStyles ?? {};
 
   const patch = (patchStyles: Record<string, string | number>) => {
@@ -147,7 +92,7 @@ const ComponentInspector = () => {
   };
 
   const captureKeyframe = () => {
-    addKeyframe(component.id, localFrame, { ...styles });
+    addKeyframe(component.id, playheadFrame, { ...styles });
   };
 
   return (
@@ -303,7 +248,7 @@ const ComponentInspector = () => {
         </FormControl>
 
         <Button size="sm" colorScheme="brand" onClick={captureKeyframe}>
-          Add keyframe at {formatTimecode(localFrame)}
+          Add keyframe at {formatTimecode(playheadFrame)}
         </Button>
 
         {(component.keyframes?.length ?? 0) > 0 && (

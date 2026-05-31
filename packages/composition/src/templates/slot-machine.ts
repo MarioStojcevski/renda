@@ -1,105 +1,179 @@
 import { staticFile } from "remotion";
 
+import { FPS } from "@renda/shared/lib/video";
 import type { VideoComposition } from "@renda/shared/types/video-composition";
 
-const LOGOS = [
-  staticFile("logos/logo-1.svg"),
-  staticFile("logos/logo-2.svg"),
-  staticFile("logos/logo-3.svg"),
-  staticFile("logos/logo-4.svg"),
-];
-const SCENE_DURATION = 180;
-const STOP_AT_FRAME = 150;
+const DURATION = FPS * 5;
 
 export const SLOT_MACHINE_TEMPLATE: VideoComposition = {
-  VideoTrack: [
+  lanes: [
     {
-      id: "scene_slot_intro",
-      type: "Scene",
-      duration: SCENE_DURATION,
+      id: "lane_bg",
+      name: "Background",
+      type: "video",
       components: [
         {
-          id: "title_slot",
-          type: "Text",
-          content: "Spin the logos",
-          animation: "",
+          id: "bg_white",
+          type: "Background",
+          startFrame: 0,
+          duration: DURATION,
+          fill: "#ffffff",
           divStyles: {
             position: "absolute",
-            top: 48,
+            inset: 0,
+            width: "100%",
+            height: "100%",
+          },
+        },
+      ],
+    },
+    {
+      id: "lane_shape",
+      name: "Shape",
+      type: "video",
+      components: [
+        {
+          id: "shape_bounce",
+          type: "Shape",
+          startFrame: 0,
+          duration: DURATION,
+          shape: "rectangle",
+          fill: "#6366f1",
+          stroke: "#4338ca",
+          strokeWidth: 3,
+          divStyles: {
+            position: "absolute",
+            left: 860,
+            top: 440,
+            width: 200,
+            height: 200,
+            borderRadius: "24px",
+          },
+          keyframes: [
+            {
+              id: "shape_in",
+              frame: 0,
+              divStyles: { opacity: "0", transform: "scale(0.3) rotate(-20deg)" },
+            },
+            {
+              id: "shape_mid",
+              frame: FPS * 0.5,
+              divStyles: { opacity: "1", transform: "scale(1.1) rotate(3deg)" },
+            },
+            {
+              id: "shape_hold",
+              frame: FPS * 4,
+              divStyles: { opacity: "1", transform: "scale(1) rotate(0deg)" },
+            },
+            {
+              id: "shape_out",
+              frame: DURATION - 1,
+              divStyles: { opacity: "0", transform: "scale(0.5) rotate(15deg)" },
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: "lane_text",
+      name: "Text",
+      type: "video",
+      components: [
+        {
+          id: "text_hello",
+          type: "Text",
+          startFrame: 0,
+          duration: DURATION,
+          content: "Renda",
+          animation: "",
+          textStyles: {
+            fontFamily: "Poppins, sans-serif",
+            fontSize: 96,
+            fontWeight: 800,
+            color: "#0F172A",
+            margin: 0,
+            letterSpacing: -2,
+            textAlign: "center",
+          },
+          divStyles: {
+            position: "absolute",
+            top: 240,
             left: 0,
             right: 0,
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
           },
-          textStyles: {
-            fontFamily: "Poppins, sans-serif",
-            fontSize: 56,
-            fontWeight: 800,
-            color: "#0F172A",
-            margin: 0,
-            letterSpacing: -1,
-          },
+          keyframes: [
+            {
+              id: "text_in",
+              frame: 0,
+              divStyles: { opacity: "0", transform: "translateY(-60px)" },
+            },
+            {
+              id: "text_bounce",
+              frame: FPS * 1,
+              divStyles: { opacity: "1", transform: "translateY(0)" },
+            },
+            {
+              id: "text_fade",
+              frame: FPS * 4,
+              divStyles: { opacity: "1", transform: "translateY(0)" },
+            },
+            {
+              id: "text_out",
+              frame: DURATION - 1,
+              divStyles: { opacity: "0", transform: "translateY(40px)" },
+            },
+          ],
         },
+      ],
+    },
+    {
+      id: "lane_video",
+      name: "Video",
+      type: "video",
+      components: [
         {
-          id: "slot_reel_1",
-          type: "SlotMachine",
-          logos: LOGOS,
-          finalIndex: 0,
-          stopAtFrame: STOP_AT_FRAME,
-          extraSpins: 5,
+          id: "vid_sample",
+          type: "Video",
+          startFrame: FPS * 0.5,
+          duration: FPS * 4,
+          src: staticFile("sample.mp4"),
+          animation: "",
           divStyles: {
             position: "absolute",
-            top: 160,
-            left: 220,
-            width: 240,
-            height: 400,
-            background: "#fff",
-            border: "4px solid #0F172A",
-            borderRadius: 24,
-            boxShadow: "0 24px 60px rgba(15,23,42,0.25)",
+            left: 160,
+            top: 540,
+            width: 320,
+            height: 180,
+            borderRadius: "12px",
+            overflow: "hidden",
           },
-        },
-        {
-          id: "slot_reel_2",
-          type: "SlotMachine",
-          logos: LOGOS,
-          finalIndex: 2,
-          stopAtFrame: STOP_AT_FRAME + 20,
-          extraSpins: 6,
-          divStyles: {
-            position: "absolute",
-            top: 160,
-            left: 520,
-            width: 240,
-            height: 400,
-            background: "#fff",
-            border: "4px solid #0F172A",
-            borderRadius: 24,
-            boxShadow: "0 24px 60px rgba(15,23,42,0.25)",
-          },
-        },
-        {
-          id: "slot_reel_3",
-          type: "SlotMachine",
-          logos: LOGOS,
-          finalIndex: 3,
-          stopAtFrame: STOP_AT_FRAME + 40,
-          extraSpins: 7,
-          divStyles: {
-            position: "absolute",
-            top: 160,
-            left: 820,
-            width: 240,
-            height: 400,
-            background: "#fff",
-            border: "4px solid #0F172A",
-            borderRadius: 24,
-            boxShadow: "0 24px 60px rgba(15,23,42,0.25)",
-          },
+          keyframes: [
+            {
+              id: "vid_in",
+              frame: FPS * 0.5,
+              divStyles: { opacity: "0", transform: "translateX(-40px)" },
+            },
+            {
+              id: "vid_show",
+              frame: FPS * 1.5,
+              divStyles: { opacity: "1", transform: "translateX(0)" },
+            },
+            {
+              id: "vid_hide",
+              frame: FPS * 4.5,
+              divStyles: { opacity: "1", transform: "translateX(0)" },
+            },
+            {
+              id: "vid_end",
+              frame: DURATION - 1,
+              divStyles: { opacity: "0", transform: "translateX(40px)" },
+            },
+          ],
         },
       ],
     },
   ],
-  AudioTrack: [],
 };

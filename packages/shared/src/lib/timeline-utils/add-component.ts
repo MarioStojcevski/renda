@@ -1,36 +1,59 @@
-import { findSceneIdAtFrame } from "../video";
-import type { SceneComponentType } from "../../types/scene-component";
+import { FPS } from "../video";
+import type { TimedComponent } from "../../types/timed-component";
 import type { VideoComposition } from "../../types/video-composition";
 
-const insertComponent = (
-  components: SceneComponentType[],
-  component: SceneComponentType
-): SceneComponentType[] => {
-  if (component.type === "Background") {
-    const rest = components.filter((c) => c.type !== "Background");
-    return [component, ...rest];
-  }
-  return [...components, component];
-};
-
-export const addComponent = ({
+export const addComponentToLane = ({
   timeline,
+  laneId,
+  component,
+}: {
+  timeline: VideoComposition;
+  laneId: string;
+  component: TimedComponent;
+}): VideoComposition => ({
+  ...timeline,
+  lanes: timeline.lanes.map((lane) =>
+    lane.id === laneId
+      ? {
+          ...lane,
+          components: [...lane.components, component],
+        }
+      : lane
+  ),
+});
+
+export const addComponentAtFrame = ({
+  timeline,
+  laneId,
   component,
   frame,
 }: {
   timeline: VideoComposition;
-  component: SceneComponentType;
+  laneId: string;
+  component: TimedComponent;
   frame: number;
-}): VideoComposition => {
-  const sceneId = findSceneIdAtFrame(timeline.VideoTrack, frame);
-  if (!sceneId) return timeline;
+}): VideoComposition =>
+  addComponentToLane({
+    timeline,
+    laneId,
+    component: { ...component, startFrame: frame },
+  });
 
-  return {
-    ...timeline,
-    VideoTrack: timeline.VideoTrack.map((scene) =>
-      scene.id === sceneId
-        ? { ...scene, components: insertComponent(scene.components, component) }
-        : scene
-    ),
-  };
+export const addComponentAtEnd = ({
+  timeline,
+  laneId,
+  component,
+}: {
+  timeline: VideoComposition;
+  laneId: string;
+  component: Omit<TimedComponent, "startFrame">;
+}): VideoComposition => {
+  const lane = timeline.lanes.find((l) => l.id === laneId);
+  const last = lane?.components.at(-1);
+  const startFrame = last ? last.startFrame + last.duration : 0;
+  return addComponentToLane({
+    timeline,
+    laneId,
+    component: { ...component, startFrame } as TimedComponent,
+  });
 };

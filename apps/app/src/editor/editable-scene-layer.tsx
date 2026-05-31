@@ -2,11 +2,11 @@ import React, { useRef } from "react";
 import Moveable from "react-moveable";
 import { flushSync } from "react-dom";
 
-import type { SceneComponentType } from "@renda/shared/types/scene-component";
+import type { TimedComponent } from "@renda/shared/types/timed-component";
 import { SceneCompositionInner } from "@renda/composition/scene-composition";
 
 type Props = {
-  components: SceneComponentType[];
+  components: TimedComponent[];
   sceneFrame: number;
   selectedId?: string | null;
   onSelect?: (id: string) => void;

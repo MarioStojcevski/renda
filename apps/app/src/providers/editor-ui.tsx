@@ -10,7 +10,7 @@ import { v4 as uuid } from "uuid";
 
 import type { UserMediaAsset } from "@renda/shared/types/user-media";
 
-export type PanelId = "media" | "inspector" | "timeline";
+export type PanelId = "media" | "inspector" | "timeline" | "ai";
 
 export type PanelVisibility = Record<PanelId, boolean>;
 
@@ -18,6 +18,7 @@ const DEFAULT_PANELS: PanelVisibility = {
   media: true,
   inspector: true,
   timeline: true,
+  ai: true,
 };
 
 const ACCEPT_IMAGE = "image/png,image/svg+xml,image/jpeg,image/webp,image/gif";

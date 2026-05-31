@@ -1,16 +1,16 @@
-import type { SceneComponentType } from "../types/scene-component";
-import type { SceneType } from "../types/scene";
+import type { TimedComponent } from "../types/timed-component";
+import type { Lane } from "../types/lane";
 import type { VideoComposition } from "../types/video-composition";
 import { FPS } from "./video";
 
 export const PX_PER_FRAME = 4;
 
-/** Seconds from frame index (for numeric inputs). */
+export const getPxPerFrame = (zoom: number) => PX_PER_FRAME * zoom;
+
 export const framesToSeconds = (frames: number) => frames / FPS;
 
 export const secondsToFrames = (seconds: number) => Math.round(seconds * FPS);
 
-/** Stable timecode label derived from frame index (avoids double-round jitter). */
 export const formatTimecode = (frame: number): string => {
   const clamped = Math.max(0, Math.round(frame));
   const totalSec = clamped / FPS;
@@ -20,51 +20,16 @@ export const formatTimecode = (frame: number): string => {
   return minutes > 0 ? `${minutes}:${secPart}` : secPart;
 };
 
-export const timelineWidthPx = (totalFrames: number) =>
-  Math.max(totalFrames * PX_PER_FRAME, 600);
-
-export type SceneAtPlayhead = {
-  scene: SceneType;
-  sceneIndex: number;
-  sceneStartFrame: number;
-  sceneLocalFrame: number;
-};
-
-export const getSceneAtPlayhead = (
-  videoTrack: SceneType[],
-  playheadFrame: number
-): SceneAtPlayhead | null => {
-  let start = 0;
-  for (let i = 0; i < videoTrack.length; i++) {
-    const scene = videoTrack[i];
-    const end = start + scene.duration;
-    if (playheadFrame < end) {
-      return {
-        scene,
-        sceneIndex: i,
-        sceneStartFrame: start,
-        sceneLocalFrame: playheadFrame - start,
-      };
-    }
-    start = end;
-  }
-  const last = videoTrack.at(-1);
-  if (!last) return null;
-  return {
-    scene: last,
-    sceneIndex: videoTrack.length - 1,
-    sceneStartFrame: start - last.duration,
-    sceneLocalFrame: last.duration - 1,
-  };
-};
+export const timelineWidthPx = (totalFrames: number, pxPerFrame = PX_PER_FRAME) =>
+  Math.max(totalFrames * pxPerFrame, 600);
 
 export const findComponent = (
   timeline: VideoComposition,
   componentId: string
-): { scene: SceneType; component: SceneComponentType } | null => {
-  for (const scene of timeline.VideoTrack) {
-    const component = scene.components.find((c) => c.id === componentId);
-    if (component) return { scene, component };
+): { lane: Lane; component: TimedComponent } | null => {
+  for (const lane of timeline.lanes) {
+    const component = lane.components.find((c) => c.id === componentId);
+    if (component) return { lane, component };
   }
   return null;
 };

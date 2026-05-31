@@ -9,27 +9,32 @@ import React, {
 
 import { SLOT_MACHINE_TEMPLATE } from "@renda/composition/templates/slot-machine";
 import { secondsToFrames } from "@renda/shared/lib/timeline-math";
-import { addAudio } from "@renda/shared/lib/timeline-utils/add-audio";
-import { addComponent } from "@renda/shared/lib/timeline-utils/add-component";
-import { addScene } from "@renda/shared/lib/timeline-utils/add-scene";
-import { deleteScene } from "@renda/shared/lib/timeline-utils/delete-scene";
+import { addLane } from "@renda/shared/lib/timeline-utils/add-lane";
+import { deleteLane } from "@renda/shared/lib/timeline-utils/delete-lane";
+import {
+  addComponentToLane,
+  addComponentAtFrame,
+} from "@renda/shared/lib/timeline-utils/add-component";
+import { removeComponent } from "@renda/shared/lib/timeline-utils/remove-component";
+import { moveComponent } from "@renda/shared/lib/timeline-utils/move-component";
+import {
+  trimComponentStart,
+  trimComponentEnd,
+} from "@renda/shared/lib/timeline-utils/trim-component";
 import { editComponent } from "@renda/shared/lib/timeline-utils/edit-component";
+import { patchComponent } from "@renda/shared/lib/timeline-utils/patch-component";
 import {
   addKeyframeAtFrame,
   removeKeyframe,
   upsertKeyframe,
 } from "@renda/shared/lib/timeline-utils/keyframes";
-import { patchComponent } from "@renda/shared/lib/timeline-utils/patch-component";
-import { removeAudio, updateAudio } from "@renda/shared/lib/timeline-utils/update-audio";
-import { updateScene } from "@renda/shared/lib/timeline-utils/update-scene";
 import type { ComponentKeyframe } from "@renda/shared/types/keyframe";
-import type { SceneComponentType } from "@renda/shared/types/scene-component";
+import type { TimedComponent } from "@renda/shared/types/timed-component";
 import type { VideoComposition } from "@renda/shared/types/video-composition";
 
 export type Selection =
   | { kind: "component"; id: string }
-  | { kind: "scene"; id: string }
-  | { kind: "audio"; id: string }
+  | { kind: "lane"; id: string }
   | null;
 
 type TimelineContextValue = {
@@ -43,21 +48,19 @@ type TimelineContextValue = {
   togglePlayback: () => void;
   select: (selection: Selection) => void;
   clearSelection: () => void;
-  addComponent: (component: SceneComponentType) => VideoComposition;
+  addLane: (name?: string, type?: "video" | "audio") => VideoComposition;
+  deleteLane: (laneId: string) => VideoComposition;
+  addComponent: (component: TimedComponent, laneId: string) => VideoComposition;
+  addComponentAtFrame: (component: TimedComponent, laneId: string, frame: number) => VideoComposition;
+  moveComponent: (componentId: string, newStartFrame: number) => VideoComposition;
+  trimComponentStart: (componentId: string, deltaFrames: number) => VideoComposition;
+  trimComponentEnd: (componentId: string, deltaFrames: number) => VideoComposition;
+  removeComponent: (componentId: string) => VideoComposition;
   editComponent: (componentId: string, divStyles: CSSProperties) => VideoComposition;
   patchComponent: (
     componentId: string,
-    patch: Partial<SceneComponentType>
+    patch: Partial<TimedComponent>
   ) => VideoComposition;
-  addScene: (atEnd?: boolean) => VideoComposition;
-  deleteScene: (sceneId: string) => VideoComposition;
-  updateSceneDuration: (sceneId: string, durationFrames: number) => VideoComposition;
-  addAudio: (src: string, atFrame?: number, durationSec?: number) => VideoComposition;
-  updateAudioSegment: (
-    audioId: string,
-    patch: Partial<{ from: number; startFrame: number; endFrame: number; src: string }>
-  ) => VideoComposition;
-  removeAudio: (audioId: string) => VideoComposition;
   addKeyframe: (componentId: string, frame: number, divStyles: CSSProperties) => VideoComposition;
   updateKeyframe: (componentId: string, keyframe: ComponentKeyframe) => VideoComposition;
   deleteKeyframe: (componentId: string, keyframeId: string) => VideoComposition;
@@ -73,14 +76,45 @@ export const TimelineProvider = ({ children }: { children: ReactNode }) => {
   const [selection, setSelection] = useState<Selection>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
+  const addLaneToTimeline = useCallback(
+    (name?: string, type?: "video" | "audio") => {
+      const next = addLane({ timeline, name, type });
+      setTimeline(next);
+      const newLane = next.lanes.at(-1);
+      if (newLane) setSelection({ kind: "lane", id: newLane.id });
+      return next;
+    },
+    [timeline]
+  );
+
+  const deleteLaneFromTimeline = useCallback(
+    (laneId: string) => {
+      const next = deleteLane({ timeline, laneId });
+      setTimeline(next);
+      if (selection?.kind === "lane" && selection.id === laneId) setSelection(null);
+      return next;
+    },
+    [timeline, selection]
+  );
+
   const addComponentToTimeline = useCallback(
-    (component: SceneComponentType) => {
-      const next = addComponent({ timeline, component, frame: playheadFrame });
+    (component: TimedComponent, laneId: string) => {
+      const next = addComponentToLane({ timeline, laneId, component });
       setTimeline(next);
       setSelection({ kind: "component", id: component.id });
       return next;
     },
-    [timeline, playheadFrame]
+    [timeline]
+  );
+
+  const addComponentAtFrameToTimeline = useCallback(
+    (component: TimedComponent, laneId: string, frame: number) => {
+      const next = addComponentAtFrame({ timeline, laneId, component, frame });
+      setTimeline(next);
+      setSelection({ kind: "component", id: component.id });
+      return next;
+    },
+    [timeline]
   );
 
   const editComponentInTimeline = useCallback(
@@ -93,7 +127,7 @@ export const TimelineProvider = ({ children }: { children: ReactNode }) => {
   );
 
   const patchComponentInTimeline = useCallback(
-    (componentId: string, patch: Partial<SceneComponentType>) => {
+    (componentId: string, patch: Partial<TimedComponent>) => {
       const next = patchComponent({ timeline, componentId, patch });
       setTimeline(next);
       return next;
@@ -101,62 +135,38 @@ export const TimelineProvider = ({ children }: { children: ReactNode }) => {
     [timeline]
   );
 
-  const deleteSceneFromTimeline = useCallback(
-    (sceneId: string) => {
-      const next = deleteScene({ timeline, sceneId });
-      setTimeline(next);
-      if (selection?.kind === "scene" && selection.id === sceneId) setSelection(null);
-      return next;
-    },
-    [timeline, selection]
-  );
-
-  const addSceneToTimeline = useCallback(() => {
-    const next = addScene({ timeline });
-    setTimeline(next);
-    const newScene = next.VideoTrack.at(-1);
-    if (newScene) setSelection({ kind: "scene", id: newScene.id });
-    return next;
-  }, [timeline]);
-
-  const updateSceneDuration = useCallback(
-    (sceneId: string, durationFrames: number) => {
-      const duration = Math.max(secondsToFrames(0.5), durationFrames);
-      const next = updateScene({ timeline, sceneId, patch: { duration } });
+  const moveComponentInTimeline = useCallback(
+    (componentId: string, newStartFrame: number) => {
+      const next = moveComponent({ timeline, componentId, newStartFrame });
       setTimeline(next);
       return next;
     },
     [timeline]
   );
 
-  const addAudioToTimeline = useCallback(
-    (src: string, atFrame = playheadFrame, durationSec = 5) => {
-      const next = addAudio({ timeline, src, atFrame, durationSec });
-      setTimeline(next);
-      const segment = next.AudioTrack.at(-1);
-      if (segment) setSelection({ kind: "audio", id: segment.id });
-      return next;
-    },
-    [timeline, playheadFrame]
-  );
-
-  const updateAudioSegment = useCallback(
-    (
-      audioId: string,
-      patch: Partial<{ from: number; startFrame: number; endFrame: number; src: string }>
-    ) => {
-      const next = updateAudio({ timeline, audioId, patch });
+  const trimComponentStartInTimeline = useCallback(
+    (componentId: string, deltaFrames: number) => {
+      const next = trimComponentStart({ timeline, componentId, deltaFrames });
       setTimeline(next);
       return next;
     },
     [timeline]
   );
 
-  const removeAudioFromTimeline = useCallback(
-    (audioId: string) => {
-      const next = removeAudio({ timeline, audioId });
+  const trimComponentEndInTimeline = useCallback(
+    (componentId: string, deltaFrames: number) => {
+      const next = trimComponentEnd({ timeline, componentId, deltaFrames });
       setTimeline(next);
-      if (selection?.kind === "audio" && selection.id === audioId) setSelection(null);
+      return next;
+    },
+    [timeline]
+  );
+
+  const removeComponentFromTimeline = useCallback(
+    (componentId: string) => {
+      const next = removeComponent({ timeline, componentId });
+      setTimeline(next);
+      if (selection?.kind === "component" && selection.id === componentId) setSelection(null);
       return next;
     },
     [timeline, selection]
@@ -205,15 +215,16 @@ export const TimelineProvider = ({ children }: { children: ReactNode }) => {
       togglePlayback,
       select: setSelection,
       clearSelection: () => setSelection(null),
+      addLane: addLaneToTimeline,
+      deleteLane: deleteLaneFromTimeline,
       addComponent: addComponentToTimeline,
+      addComponentAtFrame: addComponentAtFrameToTimeline,
+      moveComponent: moveComponentInTimeline,
+      trimComponentStart: trimComponentStartInTimeline,
+      trimComponentEnd: trimComponentEndInTimeline,
+      removeComponent: removeComponentFromTimeline,
       editComponent: editComponentInTimeline,
       patchComponent: patchComponentInTimeline,
-      addScene: addSceneToTimeline,
-      deleteScene: deleteSceneFromTimeline,
-      updateSceneDuration,
-      addAudio: addAudioToTimeline,
-      updateAudioSegment,
-      removeAudio: removeAudioFromTimeline,
       addKeyframe: addKeyframeToComponent,
       updateKeyframe: updateKeyframeOnComponent,
       deleteKeyframe: deleteKeyframeFromComponent,
@@ -224,15 +235,16 @@ export const TimelineProvider = ({ children }: { children: ReactNode }) => {
       selection,
       isPlaying,
       togglePlayback,
+      addLaneToTimeline,
+      deleteLaneFromTimeline,
       addComponentToTimeline,
+      addComponentAtFrameToTimeline,
+      moveComponentInTimeline,
+      trimComponentStartInTimeline,
+      trimComponentEndInTimeline,
+      removeComponentFromTimeline,
       editComponentInTimeline,
       patchComponentInTimeline,
-      addSceneToTimeline,
-      deleteSceneFromTimeline,
-      updateSceneDuration,
-      addAudioToTimeline,
-      updateAudioSegment,
-      removeAudioFromTimeline,
       addKeyframeToComponent,
       updateKeyframeOnComponent,
       deleteKeyframeFromComponent,

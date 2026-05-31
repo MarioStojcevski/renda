@@ -2,14 +2,14 @@ import type { CSSProperties } from "react";
 
 import { createKeyframeFromStyles } from "../keyframes";
 import type { ComponentKeyframe } from "../../types/keyframe";
-import type { SceneComponentType } from "../../types/scene-component";
+import type { TimedComponent } from "../../types/timed-component";
 import type { VideoComposition } from "../../types/video-composition";
 
 const mapComponent = (
-  component: SceneComponentType,
+  component: TimedComponent,
   componentId: string,
   updater: (keyframes: ComponentKeyframe[]) => ComponentKeyframe[]
-): SceneComponentType =>
+): TimedComponent =>
   component.id === componentId
     ? { ...component, keyframes: updater(component.keyframes ?? []) }
     : component;
@@ -24,9 +24,9 @@ export const upsertKeyframe = ({
   keyframe: ComponentKeyframe;
 }): VideoComposition => ({
   ...timeline,
-  VideoTrack: timeline.VideoTrack.map((scene) => ({
-    ...scene,
-    components: scene.components.map((c) =>
+  lanes: timeline.lanes.map((lane) => ({
+    ...lane,
+    components: lane.components.map((c) =>
       mapComponent(c, componentId, (list) => {
         const idx = list.findIndex((k) => k.id === keyframe.id);
         if (idx >= 0) {
@@ -67,9 +67,9 @@ export const removeKeyframe = ({
   keyframeId: string;
 }): VideoComposition => ({
   ...timeline,
-  VideoTrack: timeline.VideoTrack.map((scene) => ({
-    ...scene,
-    components: scene.components.map((c) =>
+  lanes: timeline.lanes.map((lane) => ({
+    ...lane,
+    components: lane.components.map((c) =>
       mapComponent(c, componentId, (list) => list.filter((k) => k.id !== keyframeId))
     ),
   })),

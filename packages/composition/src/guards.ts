@@ -6,36 +6,36 @@ import type { SlotMachineComponentType } from "@renda/shared/types/components/sl
 import type { ShapeComponentType } from "@renda/shared/types/components/shape-component";
 import type { TextComponentType } from "@renda/shared/types/components/text-component";
 import type { VideoComponentType } from "@renda/shared/types/components/video-component";
-import type { SceneComponentType } from "@renda/shared/types/scene-component";
+import type { Timed, TimedComponent } from "@renda/shared/types/timed-component";
 
 export const isBackground = (
-  component: SceneComponentType
-): component is BackgroundComponentType => component.type === "Background";
+  component: TimedComponent
+): component is Timed<BackgroundComponentType> => component.type === "Background";
 
 export const isShape = (
-  component: SceneComponentType
-): component is ShapeComponentType => component.type === "Shape";
+  component: TimedComponent
+): component is Timed<ShapeComponentType> => component.type === "Shape";
 
 export const isText = (
-  component: SceneComponentType
-): component is TextComponentType => component.type === "Text";
+  component: TimedComponent
+): component is Timed<TextComponentType> => component.type === "Text";
 
 export const isImage = (
-  component: SceneComponentType
-): component is ImageComponentType => component.type === "Image";
+  component: TimedComponent
+): component is Timed<ImageComponentType> => component.type === "Image";
 
 export const isVideo = (
-  component: SceneComponentType
-): component is VideoComponentType => component.type === "Video";
+  component: TimedComponent
+): component is Timed<VideoComponentType> => component.type === "Video";
 
 export const isLottie = (
-  component: SceneComponentType
-): component is LottieComponentType => component.type === "Lottie";
+  component: TimedComponent
+): component is Timed<LottieComponentType> => component.type === "Lottie";
 
 export const isGif = (
-  component: SceneComponentType
-): component is GifComponentType => component.type === "Gif";
+  component: TimedComponent
+): component is Timed<GifComponentType> => component.type === "Gif";
 
 export const isSlotMachine = (
-  component: SceneComponentType
-): component is SlotMachineComponentType => component.type === "SlotMachine";
+  component: TimedComponent
+): component is Timed<SlotMachineComponentType> => component.type === "SlotMachine";

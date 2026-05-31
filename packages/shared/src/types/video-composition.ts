@@ -1,7 +1,5 @@
-import type { AudioSegmentType } from "./audio-segment";
-import type { SceneType } from "./scene";
+import type { Lane } from "./lane";
 
 export type VideoComposition = {
-  VideoTrack: SceneType[];
-  AudioTrack: AudioSegmentType[];
+  lanes: Lane[];
 };

@@ -2,8 +2,8 @@ import type { VideoComposition } from "../types/video-composition";
 
 const collectSrcs = (timeline: VideoComposition): string[] => {
   const srcs: string[] = [];
-  for (const scene of timeline.VideoTrack) {
-    for (const component of scene.components) {
+  for (const lane of timeline.lanes) {
+    for (const component of lane.components) {
       if ("src" in component && typeof component.src === "string") {
         srcs.push(component.src);
       }
@@ -11,9 +11,6 @@ const collectSrcs = (timeline: VideoComposition): string[] => {
         srcs.push(...component.logos);
       }
     }
-  }
-  for (const segment of timeline.AudioTrack) {
-    if (segment.src) srcs.push(segment.src);
   }
   return srcs;
 };

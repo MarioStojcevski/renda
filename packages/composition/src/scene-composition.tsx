@@ -3,7 +3,7 @@ import { useCurrentFrame } from "remotion";
 
 import { getComponentStyleAtFrame } from "@renda/shared/lib/keyframes";
 import { sortComponentsForRender } from "@renda/shared/lib/sort-components";
-import type { SceneComponentType } from "@renda/shared/types/scene-component";
+import type { TimedComponent } from "@renda/shared/types/timed-component";
 import {
   isBackground,
   isGif,
@@ -24,7 +24,7 @@ import TextRenderer from "./renderers/text-component";
 import VideoRenderer from "./renderers/video-component";
 
 export type SceneCompositionInnerProps = {
-  components: SceneComponentType[];
+  components: TimedComponent[];
   sceneFrame: number;
   selectedId?: string | null;
   interactive?: boolean;
@@ -33,7 +33,7 @@ export type SceneCompositionInnerProps = {
 };
 
 const renderContent = (
-  component: SceneComponentType,
+  component: TimedComponent,
   frame: number,
   remotion: boolean
 ) => {
@@ -97,7 +97,7 @@ export const SceneCompositionInner: React.FC<SceneCompositionInnerProps> = ({
 };
 
 type Props = {
-  components: SceneComponentType[];
+  components: TimedComponent[];
   selectedId?: string | null;
   interactive?: boolean;
   onSelect?: (id: string) => void;

@@ -9,8 +9,8 @@ import {
   COMPOSITION_WIDTH,
   FPS,
   totalDurationFrames,
+  getActiveComponent,
 } from "@renda/shared/lib/video";
-import { getSceneAtPlayhead } from "@renda/shared/lib/timeline-math";
 import { useTimeline } from "../../providers/timeline";
 
 export default function PreviewPanel() {
@@ -29,6 +29,7 @@ export default function PreviewPanel() {
     setPlayheadFrame,
     setIsPlaying,
     select,
+    clearSelection,
     editComponent,
   } = useTimeline();
 
@@ -36,9 +37,17 @@ export default function PreviewPanel() {
   isPlayingRef.current = isPlaying;
 
   const duration = totalDurationFrames(timeline);
-  const sceneCtx = getSceneAtPlayhead(timeline.VideoTrack, playheadFrame);
   const selectedComponentId =
     selection?.kind === "component" ? selection.id : null;
+
+  const videoLanes = timeline.lanes.filter((l) => l.type === "video");
+  const activeComponents = videoLanes
+    .map((lane) => {
+      const component = getActiveComponent(lane, playheadFrame);
+      if (!component) return null;
+      return { component, sceneFrame: playheadFrame - component.startFrame };
+    })
+    .filter(Boolean) as { component: typeof videoLanes[number]["components"][number]; sceneFrame: number }[];
 
   useEffect(() => {
     const el = viewportRef.current;
@@ -144,6 +153,7 @@ export default function PreviewPanel() {
       display="flex"
       alignItems="center"
       justifyContent="center"
+      onClick={clearSelection}
     >
       <Box
         position="relative"
@@ -174,7 +184,7 @@ export default function PreviewPanel() {
           }}
         />
 
-        {!isPlaying && sceneCtx && (
+        {!isPlaying && activeComponents.length > 0 && (
           <Box
             position="absolute"
             inset={0}
@@ -182,13 +192,17 @@ export default function PreviewPanel() {
             w={`${COMPOSITION_WIDTH}px`}
             h={`${COMPOSITION_HEIGHT}px`}
           >
-            <EditableSceneLayer
-              components={sceneCtx.scene.components}
-              sceneFrame={sceneCtx.sceneLocalFrame}
-              selectedId={selectedComponentId}
-              onSelect={(id) => select({ kind: "component", id })}
-              onTransform={handleTransform}
-            />
+            {activeComponents.map(({ component, sceneFrame }, idx) => (
+              <Box key={component.id} position="absolute" inset={0} zIndex={idx}>
+                <EditableSceneLayer
+                  components={[component]}
+                  sceneFrame={sceneFrame}
+                  selectedId={selectedComponentId}
+                  onSelect={(id) => select({ kind: "component", id })}
+                  onTransform={handleTransform}
+                />
+              </Box>
+            ))}
           </Box>
         )}
       </Box>

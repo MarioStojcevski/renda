@@ -11,6 +11,8 @@ import { SceneComposition } from "./scene-composition";
 import Scenes from "./scenes";
 import { SLOT_MACHINE_TEMPLATE } from "./templates/slot-machine";
 
+const allComponents = SLOT_MACHINE_TEMPLATE.lanes.flatMap((l) => l.components);
+
 export const RemotionRoot = () => (
   <>
     <RemotionComposition
@@ -29,13 +31,13 @@ export const RemotionRoot = () => (
     />
     <RemotionComposition
       component={SceneComposition}
-      durationInFrames={SLOT_MACHINE_TEMPLATE.VideoTrack[0]?.duration ?? 230}
+      durationInFrames={totalDurationFrames(SLOT_MACHINE_TEMPLATE)}
       width={COMPOSITION_WIDTH}
       height={COMPOSITION_HEIGHT}
       fps={FPS}
       id="composition"
       defaultProps={{
-        components: SLOT_MACHINE_TEMPLATE.VideoTrack[0]?.components ?? [],
+        components: allComponents,
       }}
     />
   </>

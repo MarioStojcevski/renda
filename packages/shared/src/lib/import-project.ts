@@ -5,11 +5,8 @@ const isRecord = (v: unknown): v is Record<string, unknown> =>
 
 export const parseVideoComposition = (raw: unknown): VideoComposition | null => {
   if (!isRecord(raw)) return null;
-  if (!Array.isArray(raw.VideoTrack) || !Array.isArray(raw.AudioTrack)) return null;
-  return {
-    VideoTrack: raw.VideoTrack,
-    AudioTrack: raw.AudioTrack,
-  } as VideoComposition;
+  if (!Array.isArray(raw.lanes)) return null;
+  return raw as VideoComposition;
 };
 
 export const readProjectFile = async (file: File): Promise<VideoComposition | null> => {

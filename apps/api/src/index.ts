@@ -49,17 +49,18 @@ app.get<{ Querystring: { name?: string } }>("/api/render/file", async (request, 
 
 app.post("/api/render", async (request, reply) => {
   const timeline = request.body as {
-    VideoTrack?: unknown[];
+    lanes?: unknown[];
   };
 
-  if (!Array.isArray(timeline?.VideoTrack) || timeline.VideoTrack.length === 0) {
-    return reply.code(400).send({ error: "Add at least one scene before rendering." });
+  if (!Array.isArray(timeline?.lanes) || timeline.lanes.length === 0) {
+    return reply.code(400).send({ error: "Add at least one lane before rendering." });
   }
 
   reply.raw.writeHead(200, {
     "Content-Type": "application/x-ndjson",
     "Cache-Control": "no-cache",
     Connection: "keep-alive",
+    "Access-Control-Allow-Origin": request.headers.origin ?? "*",
   });
 
   const writeNdjson = (data: unknown) => {

@@ -2,6 +2,7 @@ import { Button, FormLabel, HStack, Input, VStack } from "@chakra-ui/react";
 import { useState } from "react";
 import { v4 as uuid } from "uuid";
 
+import { FPS } from "@renda/shared/lib/video";
 import { useTimeline } from "../../../../providers/timeline";
 import ColorPicker from "../../color-picker";
 import availableColors from "../../color-picker/colors";
@@ -10,14 +11,18 @@ const TextForm = () => {
   const [textColor, setTextColor] = useState<string>("white");
   const [textSize, setTextSize] = useState<number>(25);
   const [text, setText] = useState<string>("");
-  const { addComponent } = useTimeline();
+  const { addComponent, timeline, playheadFrame } = useTimeline();
 
   const handleClick = () => {
+    const videoLane = timeline.lanes.find((l) => l.type === "video");
+    if (!videoLane) return;
     addComponent({
       id: uuid(),
       type: "Text",
       animation: "Placeholder",
       content: text,
+      startFrame: playheadFrame,
+      duration: FPS * 5,
       textStyles: {
         color: textColor,
         fontSize: textSize,
@@ -31,7 +36,7 @@ const TextForm = () => {
         height: 80,
         zIndex: 3,
       },
-    });
+    }, videoLane.id);
   };
 
   return (
