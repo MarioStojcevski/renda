@@ -47,7 +47,7 @@ const EditorMenuBar = () => {
       toast({
         status: "error",
         title: "Invalid project file",
-        description: "Choose a JSON file exported from renda.",
+        description: "Choose a JSON file exported from rendalone.",
         duration: 4000,
       });
       return;

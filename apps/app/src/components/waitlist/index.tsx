@@ -33,7 +33,7 @@ const WaitlistPage = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    document.title = "Join the Renda waitlist";
+    document.title = "Join the rendalone. waitlist";
   }, []);
 
   const handleSubmit = (e: FormEvent) => {
@@ -79,9 +79,9 @@ const WaitlistPage = () => {
           gap={2}
           _hover={{ textDecoration: "none" }}
         >
-          <Logo w={8} h={8} color="accent" />
+          <Logo w={8} h={8} />
           <Text fontWeight="bold" fontSize="xl">
-            renda
+            rendalone.
           </Text>
         </Link>
 
@@ -112,7 +112,7 @@ const WaitlistPage = () => {
             </Heading>
             <Text color="text.secondary" lineHeight="tall">
               Check your email for the beta link. If it doesn't arrive in 5 minutes,
-              check spam. Welcome to Renda.
+              check spam. Welcome to rendalone.
             </Text>
             <Button as={RouterLink} to="/" variant="ghost" size="sm">
               Back to home
@@ -125,7 +125,7 @@ const WaitlistPage = () => {
                 You're about to change how you make videos.
               </Heading>
               <Text color="text.secondary" fontSize="lg" lineHeight="tall">
-                Renda launches soon. Free beta testing. Get early access:
+                rendalone. launches soon. Free beta testing. Get early access:
               </Text>
             </VStack>
 

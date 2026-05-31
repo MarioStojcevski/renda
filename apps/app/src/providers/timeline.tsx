@@ -7,7 +7,7 @@ import React, {
   type ReactNode,
 } from "react";
 
-import { SLOT_MACHINE_TEMPLATE } from "@renda/composition/templates/slot-machine";
+import { DEFAULT_TEMPLATE } from "@renda/composition/templates/default-template";
 import { secondsToFrames } from "@renda/shared/lib/timeline-math";
 import { addLane } from "@renda/shared/lib/timeline-utils/add-lane";
 import { deleteLane } from "@renda/shared/lib/timeline-utils/delete-lane";
@@ -71,7 +71,7 @@ const TimelineContext = React.createContext<TimelineContextValue | undefined>(
 );
 
 export const TimelineProvider = ({ children }: { children: ReactNode }) => {
-  const [timeline, setTimeline] = useState<VideoComposition>(SLOT_MACHINE_TEMPLATE);
+  const [timeline, setTimeline] = useState<VideoComposition>(DEFAULT_TEMPLATE);
   const [playheadFrame, setPlayheadFrame] = useState(0);
   const [selection, setSelection] = useState<Selection>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -119,11 +119,11 @@ export const TimelineProvider = ({ children }: { children: ReactNode }) => {
 
   const editComponentInTimeline = useCallback(
     (componentId: string, divStyles: CSSProperties) => {
-      const next = editComponent({ timeline, componentId, divStyles });
+      const next = editComponent({ timeline, componentId, divStyles, playheadFrame });
       setTimeline(next);
       return next;
     },
-    [timeline]
+    [timeline, playheadFrame]
   );
 
   const patchComponentInTimeline = useCallback(

@@ -13,7 +13,7 @@ export const solutionSteps: SolutionStep[] = [
   {
     badge: "2",
     title: "Generate",
-    body: "Renda's AI reads your description and builds a full video composition in 30 seconds. Boom — draft complete.",
+    body: "At rendalone., our AI reads your description and builds a full video composition in 30 seconds. Boom — draft complete.",
   },
   {
     badge: "3",
@@ -37,7 +37,7 @@ export const workSteps: WorkStep[] = [
   {
     step: "Step 2",
     title: "Instant Draft",
-    body: "Renda generates a composition with clips, transitions, music suggestions, and captions. Ready to use or ready to refactor.",
+    body: "rendalone. generates a composition with clips, transitions, music suggestions, and captions. Ready to use or ready to refactor.",
   },
   {
     step: "Step 3",
@@ -81,7 +81,7 @@ export const features: Feature[] = [
   },
   {
     title: "Template Library",
-    body: "Don't start from scratch. Pick a template — explainer, product demo, testimonial, course intro — and describe your variation. Renda fills in the rest.",
+    body: "Don't start from scratch. Pick a template — explainer, product demo, testimonial, course intro — and describe your variation. rendalone. fills in the rest.",
   },
 ];
 
@@ -163,13 +163,13 @@ export const testimonials: Testimonial[] = [
   },
   {
     quote:
-      "As a course creator, I was drowning in video editing. Renda cut my editing time by 60%. I'm actually shipping videos on schedule now.",
+      "As a course creator, I was drowning in video editing. rendalone. cut my editing time by 60%. I'm actually shipping videos on schedule now.",
     name: "Marcus Johnson",
     title: "Course Creator, edtech startup",
   },
   {
     quote:
-      "We tested 5 different editors for our marketing team. Renda is the only one where our team doesn't need training. They just... use it.",
+      "We tested 5 different editors for our marketing team. rendalone. is the only one where our team doesn't need training. They just... use it.",
     name: "Lisa Rodriguez",
     title: "Marketing Manager, B2B SaaS",
   },
@@ -183,11 +183,11 @@ export type Faq = {
 export const faqs: Faq[] = [
   {
     q: "Do I need to be tech-savvy?",
-    a: "Nope. If you can describe a video, you can use Renda. The interface is intentionally simple. Most users never touch preferences.",
+    a: "Nope. If you can describe a video, you can use rendalone. The interface is intentionally simple. Most users never touch preferences.",
   },
   {
     q: "Can I use my own media (photos, videos, music)?",
-    a: "Yes. Upload your own files, or search our built-in library. Renda works with both.",
+    a: "Yes. Upload your own files, or search our built-in library. rendalone. works with both.",
   },
   {
     q: "What if I don't like the AI's first draft?",
@@ -199,7 +199,7 @@ export const faqs: Faq[] = [
   },
   {
     q: "What's the BYOK thing?",
-    a: '"Bring Your Own Key." You paste your OpenAI or Claude API key into Renda. We use it to generate video compositions. You pay OpenAI/Anthropic directly, not us. No middleman markup. Total transparency.',
+    a: '"Bring Your Own Key." You paste your OpenAI or Claude API key into rendalone. We use it to generate video compositions. You pay OpenAI/Anthropic directly, not us. No middleman markup. Total transparency.',
   },
   {
     q: "Can I export to TikTok/Instagram sizes?",

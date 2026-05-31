@@ -9,6 +9,7 @@ import {
   NumberInputField,
   Select,
   Text,
+  Tooltip,
   VStack,
 } from "@chakra-ui/react";
 import { DeleteIcon } from "@chakra-ui/icons";
@@ -21,10 +22,20 @@ import {
   secondsToFrames,
 } from "@renda/shared/lib/timeline-math";
 import {
+  buildFadeInKeyframes,
+  buildFadeOutKeyframes,
+  clearFadeIn,
+  clearFadeOut,
+  FADE_DURATION_FRAMES,
+  hasFadeIn,
+  hasFadeOut,
+} from "@renda/shared/lib/timeline-utils/fade-keyframes";
+import {
   isBackground,
   isImage,
   isShape,
 } from "@renda/composition/guards";
+import { FPS } from "@renda/shared/lib/video";
 import { useTimeline } from "../../providers/timeline";
 import NativeColorInput from "../shared/native-color-input";
 import Panel from "../shared/panel";
@@ -87,12 +98,18 @@ const ComponentInspector = () => {
   const { component } = found;
   const styles = component.divStyles ?? {};
 
+  const sceneFrame = playheadFrame - component.startFrame;
+  const fadeInActive = hasFadeIn(component);
+  const fadeOutActive = hasFadeOut(component);
+  const fadeSeconds = Math.round((FADE_DURATION_FRAMES / FPS) * 10) / 10;
+
   const patch = (patchStyles: Record<string, string | number>) => {
     editComponent(component.id, { ...styles, ...patchStyles });
   };
 
   const captureKeyframe = () => {
-    addKeyframe(component.id, playheadFrame, { ...styles });
+    if (sceneFrame < 0 || sceneFrame >= component.duration) return;
+    addKeyframe(component.id, sceneFrame, { ...styles });
   };
 
   return (
@@ -247,8 +264,66 @@ const ComponentInspector = () => {
           />
         </FormControl>
 
-        <Button size="sm" colorScheme="brand" onClick={captureKeyframe}>
-          Add keyframe at {formatTimecode(playheadFrame)}
+        <VStack align="stretch" spacing={2}>
+          <Text fontSize="xs" color="text.muted" textTransform="uppercase">
+            Opacity fades
+          </Text>
+          <HStack spacing={2}>
+            <Tooltip label={fadeInActive ? "Click to remove fade in" : "Add fade in"} openDelay={400}>
+              <Button
+                size="sm"
+                flex={1}
+                minW={0}
+                px={2}
+                fontSize="xs"
+                whiteSpace="nowrap"
+                variant={fadeInActive ? "solid" : "outline"}
+                colorScheme={fadeInActive ? "brand" : undefined}
+                onClick={() =>
+                  patchComponent(component.id, {
+                    keyframes: fadeInActive
+                      ? clearFadeIn(component)
+                      : buildFadeInKeyframes(component),
+                  })
+                }
+              >
+                Fade in
+              </Button>
+            </Tooltip>
+            <Tooltip label={fadeOutActive ? "Click to remove fade out" : "Add fade out"} openDelay={400}>
+              <Button
+                size="sm"
+                flex={1}
+                minW={0}
+                px={2}
+                fontSize="xs"
+                whiteSpace="nowrap"
+                variant={fadeOutActive ? "solid" : "outline"}
+                colorScheme={fadeOutActive ? "brand" : undefined}
+                onClick={() =>
+                  patchComponent(component.id, {
+                    keyframes: fadeOutActive
+                      ? clearFadeOut(component)
+                      : buildFadeOutKeyframes(component),
+                  })
+                }
+              >
+                Fade out
+              </Button>
+            </Tooltip>
+          </HStack>
+          <Text fontSize="xs" color="text.muted">
+            {fadeSeconds}s fade at clip start or end. Affects playback only.
+          </Text>
+        </VStack>
+
+        <Button
+          size="sm"
+          colorScheme="brand"
+          onClick={captureKeyframe}
+          isDisabled={sceneFrame < 0 || sceneFrame >= component.duration}
+        >
+          Add keyframe at {formatTimecode(Math.max(0, sceneFrame))}
         </Button>
 
         {(component.keyframes?.length ?? 0) > 0 && (

@@ -8,10 +8,6 @@ export const readFromLocalStorage = <T>(key: string): T | null => {
   return null;
 };
 
-export const deleteFromLocalStorage = (key: string): void => {
-  localStorage.removeItem(key);
-};
-
 export const writeToLocalStorage = (key: string, value: any): void => {
   localStorage.setItem(key, JSON.stringify(value));
 };

@@ -1,14 +1,3 @@
-import { COMPOSITION_HEIGHT, COMPOSITION_WIDTH } from "./video";
-
-export const fullCanvasStyles = {
-  position: "absolute" as const,
-  left: 0,
-  top: 0,
-  width: COMPOSITION_WIDTH,
-  height: COMPOSITION_HEIGHT,
-  zIndex: 0,
-};
-
 export const defaultMediaStyles = {
   position: "absolute" as const,
   left: 240,

@@ -34,7 +34,7 @@ const CtaSection = () => (
         </Heading>
 
         <Text color="text.secondary" fontSize={{ base: "md", md: "lg" }} maxW="xl" lineHeight="tall">
-          Renda is free to start. No credit card. No watermarks on the free plan.
+          rendalone. is free to start. No credit card. No watermarks on the free plan.
           Describe a video. Get a draft. Export. Done.
         </Text>
 

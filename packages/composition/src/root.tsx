@@ -9,16 +9,16 @@ import {
 import type { VideoComposition } from "@renda/shared/types/video-composition";
 import { SceneComposition } from "./scene-composition";
 import Scenes from "./scenes";
-import { SLOT_MACHINE_TEMPLATE } from "./templates/slot-machine";
+import { DEFAULT_TEMPLATE } from "./templates/default-template";
 
-const allComponents = SLOT_MACHINE_TEMPLATE.lanes.flatMap((l) => l.components);
+const allComponents = DEFAULT_TEMPLATE.lanes.flatMap((l) => l.components);
 
 export const RemotionRoot = () => (
   <>
     <RemotionComposition
       component={Scenes}
       id="scenes"
-      defaultProps={SLOT_MACHINE_TEMPLATE}
+      defaultProps={DEFAULT_TEMPLATE}
       calculateMetadata={async ({ props }) => {
         const timeline = props as VideoComposition;
         return {
@@ -31,7 +31,7 @@ export const RemotionRoot = () => (
     />
     <RemotionComposition
       component={SceneComposition}
-      durationInFrames={totalDurationFrames(SLOT_MACHINE_TEMPLATE)}
+      durationInFrames={totalDurationFrames(DEFAULT_TEMPLATE)}
       width={COMPOSITION_WIDTH}
       height={COMPOSITION_HEIGHT}
       fps={FPS}

@@ -1,4 +1,9 @@
 import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
   Box,
   Button,
   Flex,
@@ -12,7 +17,6 @@ import {
   TabPanels,
   Tabs,
   Text,
-  Tooltip,
   VStack,
 } from "@chakra-ui/react";
 import { CloseIcon } from "@chakra-ui/icons";
@@ -23,12 +27,13 @@ import {
   defaultMediaImageStyles,
   defaultMediaStyles,
 } from "@renda/shared/lib/component-defaults";
-import { FPS } from "@renda/shared/lib/video";
 import { secondsToFrames } from "@renda/shared/lib/timeline-math";
 import { ACCEPT_MEDIA, useEditorUi } from "../../../providers/editor-ui";
 import { useTimeline } from "../../../providers/timeline";
 import type { UserMediaAsset } from "@renda/shared/types/user-media";
-import PopoverComponent from "../../shared/popover";
+import GifForm from "../../shared/popover/components/gif-form";
+import ShapeForm from "../../shared/popover/components/shape-form";
+import TextForm from "../../shared/popover/components/text-form";
 
 const formatDuration = (sec: number) => {
   const total = Math.max(0, Math.round(sec));
@@ -115,24 +120,50 @@ const MediaPanel = () => {
   return (
     <Tabs variant="line" size="sm" h="100%" display="flex" flexDirection="column" colorScheme="teal">
       <TabList borderBottom="1px solid" borderColor="border.subtle" flexShrink={0}>
-        <Tab sx={tabSx}>Gifs</Tab>
-        <Tab sx={tabSx}>Text</Tab>
-        <Tab sx={tabSx}>Shapes</Tab>
+        <Tab sx={tabSx}>Add</Tab>
         <Tab sx={tabSx}>User</Tab>
         <Tab sx={tabSx}>Stock</Tab>
       </TabList>
 
-      <TabPanels flex={1} minH={0}>
+      <TabPanels flex={1} minH={0} overflowY="auto">
         <TabPanel p={0} pt={2}>
-          <PopoverComponent type="Gif" />
-        </TabPanel>
+          <Accordion allowToggle reduceMotion>
+            <AccordionItem border="none">
+              <AccordionButton px={2} py={2} borderRadius="control" _hover={{ bg: "bg.hover" }}>
+                <Box flex={1} textAlign="left" fontSize="sm">
+                  Text
+                </Box>
+                <AccordionIcon />
+              </AccordionButton>
+              <AccordionPanel px={2} pb={3}>
+                <TextForm />
+              </AccordionPanel>
+            </AccordionItem>
 
-        <TabPanel p={0} pt={2}>
-          <PopoverComponent type="Text" />
-        </TabPanel>
+            <AccordionItem border="none">
+              <AccordionButton px={2} py={2} borderRadius="control" _hover={{ bg: "bg.hover" }}>
+                <Box flex={1} textAlign="left" fontSize="sm">
+                  Shape
+                </Box>
+                <AccordionIcon />
+              </AccordionButton>
+              <AccordionPanel px={2} pb={3}>
+                <ShapeForm />
+              </AccordionPanel>
+            </AccordionItem>
 
-        <TabPanel p={0} pt={2}>
-          <PopoverComponent type="Shape" />
+            <AccordionItem border="none">
+              <AccordionButton px={2} py={2} borderRadius="control" _hover={{ bg: "bg.hover" }}>
+                <Box flex={1} textAlign="left" fontSize="sm">
+                  GIF
+                </Box>
+                <AccordionIcon />
+              </AccordionButton>
+              <AccordionPanel px={2} pb={3}>
+                <GifForm />
+              </AccordionPanel>
+            </AccordionItem>
+          </Accordion>
         </TabPanel>
 
         <TabPanel p={0} pt={2} h="100%" display="flex" flexDirection="column">
@@ -161,71 +192,71 @@ const MediaPanel = () => {
               p={4}
             >
               <Text fontSize="xs" color="text.muted" textAlign="center">
-                Upload PNG, SVG, JPG, GIF, or audio (MP3/WAV/OGG). Click or drag an item to the timeline.
+                Upload PNG, SVG, JPG, GIF, or audio. Click an item to add it at the playhead.
               </Text>
             </Flex>
           ) : (
             <Box flex={1} overflowY="auto" pr={1}>
               <SimpleGrid columns={2} spacing={2}>
                 {userMedia.map((asset) => (
-                  <Tooltip key={asset.id} label={asset.name} fontSize="xs" placement="top" openDelay={400}>
-                    <Box
-                      position="relative"
-                      role="button"
-                      tabIndex={0}
-                      borderRadius="control"
-                      border="1px solid"
-                      borderColor="border.subtle"
-                      bg="bg.subtle"
-                      overflow="hidden"
-                      cursor="grab"
-                      draggable
-                      transition="border-color 120ms ease, background 120ms ease"
-                      _hover={{ borderColor: "accent", bg: "bg.hover" }}
-                      onClick={() => addAssetToScene(asset)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") addAssetToScene(asset);
-                      }}
-                      onDragStart={(e) => handleDragStart(e, asset)}
-                    >
-                      <Box h="72px" display="flex" alignItems="center" justifyContent="center" p={1}>
-                        {asset.kind === "audio" ? (
-                          <Flex direction="column" align="center" justify="center" gap={1}>
-                            <Text fontSize="2xl" lineHeight={1} color="accent">♪</Text>
-                            {asset.durationSec != null && (
-                              <Text fontSize="10px" color="text.muted" sx={{ fontVariantNumeric: "tabular-nums" }}>
-                                {formatDuration(asset.durationSec)}
-                              </Text>
-                            )}
-                          </Flex>
-                        ) : (
-                          <Image
-                            src={asset.src}
-                            alt={asset.name}
-                            maxH="100%"
-                            maxW="100%"
-                            objectFit="contain"
-                          />
-                        )}
-                      </Box>
-                      <Text fontSize="10px" px={2} py={1} noOfLines={1} color="text.muted">
-                        {asset.name}
-                      </Text>
-                      <IconButton
-                        aria-label="Remove from library"
-                        icon={<CloseIcon boxSize={2} />}
-                        size="xs"
-                        variant="ghost"
-                        position="absolute"
-                        top={0}
-                        right={0}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeUserMedia(asset.id);
-                        }}
-                      />
+                  <Box
+                    key={asset.id}
+                    position="relative"
+                    role="button"
+                    tabIndex={0}
+                    borderRadius="control"
+                    border="1px solid"
+                    borderColor="border.subtle"
+                    bg="bg.subtle"
+                    overflow="hidden"
+                    cursor="grab"
+                    draggable
+                    transition="border-color 120ms ease, background 120ms ease"
+                    _hover={{ borderColor: "accent", bg: "bg.hover" }}
+                    onClick={() => addAssetToScene(asset)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") addAssetToScene(asset);
+                    }}
+                    onDragStart={(e) => handleDragStart(e, asset)}
+                    title={asset.name}
+                  >
+                    <Box h="72px" display="flex" alignItems="center" justifyContent="center" p={1}>
+                      {asset.kind === "audio" ? (
+                        <Flex direction="column" align="center" justify="center" gap={1}>
+                          <Text fontSize="2xl" lineHeight={1} color="accent">♪</Text>
+                          {asset.durationSec != null && (
+                            <Text fontSize="10px" color="text.muted" sx={{ fontVariantNumeric: "tabular-nums" }}>
+                              {formatDuration(asset.durationSec)}
+                            </Text>
+                          )}
+                        </Flex>
+                      ) : (
+                        <Image
+                          src={asset.src}
+                          alt={asset.name}
+                          maxH="100%"
+                          maxW="100%"
+                          objectFit="contain"
+                        />
+                      )}
                     </Box>
-                  </Tooltip>
+                    <Text fontSize="10px" px={2} py={1} noOfLines={1} color="text.muted">
+                      {asset.name}
+                    </Text>
+                    <IconButton
+                      aria-label="Remove from library"
+                      icon={<CloseIcon boxSize={2} />}
+                      size="xs"
+                      variant="ghost"
+                      position="absolute"
+                      top={0}
+                      right={0}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeUserMedia(asset.id);
+                      }}
+                    />
+                  </Box>
                 ))}
               </SimpleGrid>
             </Box>
@@ -244,7 +275,7 @@ const MediaPanel = () => {
             minH="120px"
           >
             <Text fontSize="xs" color="text.muted" textAlign="center">
-              Stock media library coming soon. AI-powered search for videos and images.
+              Stock media library coming soon.
             </Text>
           </Flex>
         </TabPanel>

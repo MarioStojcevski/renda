@@ -7,7 +7,7 @@ const Testimonials = () => (
   <Section>
     <VStack spacing={4} mb={{ base: 10, md: 16 }} textAlign="center">
       <Heading as="h2" fontSize={{ base: "2xl", md: "4xl" }} letterSpacing="-0.02em">
-        Real creators are already using Renda.
+        Real creators are already using rendalone.
       </Heading>
     </VStack>
 

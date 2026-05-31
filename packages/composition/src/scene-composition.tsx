@@ -1,5 +1,6 @@
 import React, { useMemo, useRef } from "react";
 import { useCurrentFrame } from "remotion";
+import type { CSSProperties } from "react";
 
 import { getComponentStyleAtFrame } from "@renda/shared/lib/keyframes";
 import { sortComponentsForRender } from "@renda/shared/lib/sort-components";
@@ -10,7 +11,6 @@ import {
   isImage,
   isLottie,
   isShape,
-  isSlotMachine,
   isText,
   isVideo,
 } from "./guards";
@@ -19,7 +19,6 @@ import GifRenderer from "./renderers/gif-component";
 import ImageRenderer from "./renderers/image-component";
 import LottieRenderer from "./renderers/lottie-component";
 import ShapeRenderer from "./renderers/shape-component";
-import SlotMachineRenderer from "./renderers/slot-machine-component";
 import TextRenderer from "./renderers/text-component";
 import VideoRenderer from "./renderers/video-component";
 
@@ -30,6 +29,8 @@ export type SceneCompositionInnerProps = {
   interactive?: boolean;
   onSelect?: (id: string) => void;
   targetRefs?: React.MutableRefObject<Record<string, HTMLDivElement | null>>;
+  /** Live drag/resize overrides keyed by component id (editor only). */
+  styleOverrides?: Record<string, CSSProperties>;
 };
 
 const renderContent = (
@@ -44,9 +45,6 @@ const renderContent = (
   if (isVideo(component)) return <VideoRenderer {...component} remotion={remotion} />;
   if (isLottie(component)) return <LottieRenderer {...component} remotion={remotion} />;
   if (isGif(component)) return <GifRenderer {...component} remotion={remotion} />;
-  if (isSlotMachine(component)) {
-    return <SlotMachineRenderer {...component} frame={frame} remotion={remotion} />;
-  }
   return null;
 };
 
@@ -57,6 +55,7 @@ export const SceneCompositionInner: React.FC<SceneCompositionInnerProps> = ({
   interactive = false,
   onSelect,
   targetRefs,
+  styleOverrides,
 }) => {
   const sorted = useMemo(() => sortComponentsForRender(components), [components]);
   const internalRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -65,7 +64,10 @@ export const SceneCompositionInner: React.FC<SceneCompositionInnerProps> = ({
   return (
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
       {sorted.map((component) => {
-        const style = getComponentStyleAtFrame(component, sceneFrame);
+        const style = {
+          ...getComponentStyleAtFrame(component, sceneFrame),
+          ...styleOverrides?.[component.id],
+        };
         const selected = selectedId === component.id;
         const isBack = component.type === "Background";
 

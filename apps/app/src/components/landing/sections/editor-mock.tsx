@@ -10,7 +10,7 @@ const trackClips = [
   { w: "22%", bg: "accent", label: "CTA" },
 ];
 
-/** Stylized, static mock of the Renda editor used in the hero. */
+/** Stylized, static mock of the rendalone. editor used in the hero. */
 const EditorMock = () => (
   <Box
     borderRadius="xl"
@@ -37,7 +37,7 @@ const EditorMock = () => (
         <Dot color="status.success" />
       </HStack>
       <Text fontSize="xs" color="text.muted">
-        renda — launch-video.mp4
+        rendalone. — launch-video.mp4
       </Text>
       <Box w={12} />
     </Flex>

@@ -2,7 +2,6 @@ import type { TimedComponent } from "../types/timed-component";
 
 const Z_ORDER: Record<string, number> = {
   Background: 0,
-  SlotMachine: 1,
   Shape: 2,
   Video: 3,
   Image: 4,

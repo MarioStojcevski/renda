@@ -22,8 +22,8 @@ const MarketingFooter = () => (
           gap={2}
           _hover={{ textDecoration: "none" }}
         >
-          <Logo w={6} h={6} color="accent" />
-          <Text fontWeight="bold">renda</Text>
+          <Logo w={6} h={6} />
+          <Text fontWeight="bold">rendalone.</Text>
         </Link>
         <Text mt={2} fontSize="sm" color="text.muted">
           Describe it. Generate it. Ship it.
@@ -46,17 +46,17 @@ const MarketingFooter = () => (
           Twitter / X
         </Link>
         <Link
-          href="mailto:hello@renda.io"
+          href="mailto:hello@rendalone.io"
           color="text.secondary"
           _hover={{ color: "text.primary" }}
         >
-          hello@renda.io
+          hello@rendalone.io
         </Link>
       </HStack>
     </Flex>
 
     <Text mt={8} fontSize="xs" color="text.disabled" textAlign="center">
-      © {new Date().getFullYear()} Renda. All rights reserved.
+      © {new Date().getFullYear()} rendalone. All rights reserved.
     </Text>
   </Box>
 );

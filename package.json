@@ -19,8 +19,5 @@
   "devDependencies": {
     "concurrently": "^9.1.2",
     "typescript": "^5.5.4"
-  },
-  "dependencies": {
-    "@heroicons/react": "^2.2.0"
   }
 }

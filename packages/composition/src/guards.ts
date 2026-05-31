@@ -2,7 +2,6 @@ import type { BackgroundComponentType } from "@renda/shared/types/components/bac
 import type { GifComponentType } from "@renda/shared/types/components/gif-component";
 import type { ImageComponentType } from "@renda/shared/types/components/image-component";
 import type { LottieComponentType } from "@renda/shared/types/components/lottie-component";
-import type { SlotMachineComponentType } from "@renda/shared/types/components/slot-machine-component";
 import type { ShapeComponentType } from "@renda/shared/types/components/shape-component";
 import type { TextComponentType } from "@renda/shared/types/components/text-component";
 import type { VideoComponentType } from "@renda/shared/types/components/video-component";
@@ -35,7 +34,3 @@ export const isLottie = (
 export const isGif = (
   component: TimedComponent
 ): component is Timed<GifComponentType> => component.type === "Gif";
-
-export const isSlotMachine = (
-  component: TimedComponent
-): component is Timed<SlotMachineComponentType> => component.type === "SlotMachine";

@@ -27,14 +27,14 @@ const Header = () => {
             gap={2}
             _hover={{ textDecoration: "none" }}
           >
-            <Logo w={7} h={7} color="accent" />
+            <Logo w={7} h={7} />
             <Text
               fontWeight="semibold"
               fontSize="sm"
               letterSpacing="-0.02em"
               color="text.primary"
             >
-              renda
+              rendalone.
             </Text>
           </Link>
 

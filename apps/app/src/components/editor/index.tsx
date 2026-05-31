@@ -97,8 +97,9 @@ export default function Editor() {
               display="flex"
               flexDirection="column"
               p={3}
+              zIndex={2}
             >
-              <Box flex={1} minH={0} overflow="hidden">
+              <Box flex={1} minH={0} overflowY="auto" overflowX="hidden">
                 {showSelection ? <ComponentInspector /> : <MediaPanel />}
               </Box>
             </Box>

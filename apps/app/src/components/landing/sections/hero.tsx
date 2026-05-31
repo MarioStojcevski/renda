@@ -53,7 +53,7 @@ const Hero = () => (
       </Heading>
 
       <Text fontSize={{ base: "lg", md: "xl" }} color="text.secondary" maxW="2xl" lineHeight="tall">
-        Stop staring at blank timelines. Tell Renda what you want. Get a polished
+        Stop staring at blank timelines. Tell rendalone. what you want. Get a polished
         video in 30 seconds. Tweak it in seconds more. Ship it.
       </Text>
 

@@ -1,1 +1,1 @@
-export const TEMPLATES_KEY = "renda.templates";
+export const TEMPLATES_KEY = "rendalone.templates";

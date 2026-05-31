@@ -1,0 +1,67 @@
+name: Deploy frontend to GitHub Pages
+
+# Builds the Vite editor (apps/app) and publishes it to GitHub Pages.
+# The custom domain (rendalone.com) is configured via the committed CNAME file
+# at packages/composition/public/CNAME, which Vite copies to the build root.
+#
+# NOTE: this deploys the static frontend only. The MP4 export feature talks to
+# the Fastify render server (apps/api), which is NOT hosted on GitHub Pages, so
+# rendering will not work on the public site until the API is deployed somewhere.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment; don't cancel an in-progress run.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build editor
+        run: npm run build
+
+      - name: Add SPA fallback (404 -> index.html for client-side routing)
+        run: cp apps/app/dist/index.html apps/app/dist/404.html
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/app/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

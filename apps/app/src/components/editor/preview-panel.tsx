@@ -97,6 +97,7 @@ export default function PreviewPanel() {
 
     const onPause = () => {
       isPlayingRef.current = false;
+      setIsPlaying(false);
       const frame = Math.round(
         typeof player.getCurrentFrame === "function"
           ? player.getCurrentFrame()
@@ -191,6 +192,7 @@ export default function PreviewPanel() {
             bg="bg.preview"
             w={`${COMPOSITION_WIDTH}px`}
             h={`${COMPOSITION_HEIGHT}px`}
+            pointerEvents="auto"
           >
             {activeComponents.map(({ component, sceneFrame }, idx) => (
               <Box key={component.id} position="absolute" inset={0} zIndex={idx}>

@@ -1,22 +1,5 @@
 import type { CSSProperties } from "react";
 
-/** Frame interpolation without Remotion context (safe in editor overlay). */
-export const interpolateFrame = (
-  frame: number,
-  inputRange: [number, number],
-  outputRange: [number, number],
-  easing: (t: number) => number = (t) => t
-): number => {
-  const [in0, in1] = inputRange;
-  const [out0, out1] = outputRange;
-  if (frame <= in0) return out0;
-  if (frame >= in1) return out1;
-  const t = easing((frame - in0) / (in1 - in0));
-  return out0 + (out1 - out0) * t;
-};
-
-export const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4);
-
 const parsePxNum = (v: unknown): number => {
   if (typeof v === "number") return v;
   if (typeof v === "string") {
@@ -24,6 +7,19 @@ const parsePxNum = (v: unknown): number => {
     return Number.isFinite(n) ? n : 0;
   }
   return 0;
+};
+
+const isOpacityValue = (a: unknown, b: unknown) => {
+  const parse = (v: unknown) => {
+    if (typeof v === "number") return v;
+    if (typeof v === "string" && v.trim() !== "" && !Number.isNaN(Number(v))) {
+      return Number(v);
+    }
+    return null;
+  };
+  const aNum = parse(a);
+  const bNum = parse(b);
+  return aNum !== null && bNum !== null && aNum >= 0 && aNum <= 1 && bNum >= 0 && bNum <= 1;
 };
 
 /** Interpolate between two CSSProperties objects by ratio (0-1). */
@@ -44,6 +40,11 @@ export const interpolate = (
 
     const aNum = parsePxNum(a);
     const bNum = parsePxNum(b);
+
+    if (key === "opacity" || isOpacityValue(a, b)) {
+      result[key] = String(aNum + (bNum - aNum) * ratio);
+      continue;
+    }
 
     if (typeof a === "string" && typeof b === "string") {
       if (a.includes("px") || b.includes("px")) {

@@ -3,9 +3,20 @@ import type { Lane } from "../types/lane";
 import type { VideoComposition } from "../types/video-composition";
 import { FPS } from "./video";
 
-export const PX_PER_FRAME = 4;
+/** Seconds visible in the track area at 100% zoom (target ~10–15s). */
+export const TIMELINE_SECONDS_AT_100_ZOOM = 12.5;
 
-export const getPxPerFrame = (zoom: number) => PX_PER_FRAME * zoom;
+/** Fallback track width when the timeline viewport is not measured yet. */
+export const TIMELINE_REFERENCE_TRACK_WIDTH_PX = 1050;
+
+export const PX_PER_FRAME =
+  TIMELINE_REFERENCE_TRACK_WIDTH_PX / (TIMELINE_SECONDS_AT_100_ZOOM * FPS);
+
+export const getBasePxPerFrame = (trackWidthPx: number) =>
+  trackWidthPx / (TIMELINE_SECONDS_AT_100_ZOOM * FPS);
+
+export const getPxPerFrame = (zoom: number, trackWidthPx = TIMELINE_REFERENCE_TRACK_WIDTH_PX) =>
+  getBasePxPerFrame(trackWidthPx) * zoom;
 
 export const framesToSeconds = (frames: number) => frames / FPS;
 

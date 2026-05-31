@@ -52,9 +52,9 @@ const MarketingNav = () => {
           gap={2}
           _hover={{ textDecoration: "none" }}
         >
-          <Logo w={7} h={7} color="accent" />
+          <Logo w={7} h={7} />
           <Text fontWeight="bold" fontSize="lg" letterSpacing="-0.02em">
-            renda
+            rendalone.
           </Text>
         </Link>
 

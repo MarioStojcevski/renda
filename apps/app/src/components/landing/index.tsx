@@ -15,7 +15,7 @@ import CtaSection from "./sections/cta";
 
 const LandingPage = () => {
   useEffect(() => {
-    document.title = "Renda — Describe it. Generate it. Ship it.";
+    document.title = "rendalone. — Describe it. Generate it. Ship it.";
   }, []);
 
   return (

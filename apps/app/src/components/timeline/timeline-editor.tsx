@@ -9,7 +9,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { v4 as uuid } from "uuid";
 
 import { defaultMediaStyles, defaultMediaImageStyles } from "@renda/shared/lib/component-defaults";
-import { secondsToFrames, getPxPerFrame, timelineWidthPx } from "@renda/shared/lib/timeline-math";
+import {
+  secondsToFrames,
+  getPxPerFrame,
+  TIMELINE_REFERENCE_TRACK_WIDTH_PX,
+  timelineWidthPx,
+} from "@renda/shared/lib/timeline-math";
 import { FPS, totalDurationFrames } from "@renda/shared/lib/video";
 import type { TimedComponent } from "@renda/shared/types/timed-component";
 import type { UserMediaAsset } from "@renda/shared/types/user-media";
@@ -24,7 +29,6 @@ const EXTRA_SECONDS = 10;
 
 const TYPE_COLORS: Record<string, string> = {
   Background: "gray.600",
-  SlotMachine: "teal.600",
   Shape: "purple.600",
   Video: "blue.600",
   Image: "green.600",
@@ -43,8 +47,6 @@ type DragState = {
   startSourceStartFrame: number;
 };
 
-const FADE_DURATION = Math.round(FPS * 0.3);
-
 const ComponentBlock = ({
   component,
   leftPx,
@@ -53,8 +55,6 @@ const ComponentBlock = ({
   onMouseDown,
   onTrimStartMouseDown,
   onTrimEndMouseDown,
-  onFadeIn,
-  onFadeOut,
 }: {
   component: TimedComponent;
   leftPx: number;
@@ -63,13 +63,14 @@ const ComponentBlock = ({
   onMouseDown: (e: React.MouseEvent) => void;
   onTrimStartMouseDown: (e: React.MouseEvent) => void;
   onTrimEndMouseDown: (e: React.MouseEvent) => void;
-  onFadeIn: () => void;
-  onFadeOut: () => void;
-}) => (
+}) => {
+  const blockWidth = Math.max(widthPx, 20);
+
+  return (
   <Box
     position="absolute"
     left={`${leftPx}px`}
-    w={`${Math.max(widthPx, 20)}px`}
+    w={`${blockWidth}px`}
     h="36px"
     top="8px"
     bg={TYPE_COLORS[component.type] ?? "gray.500"}
@@ -82,9 +83,9 @@ const ComponentBlock = ({
     justifyContent="center"
     onMouseDown={onMouseDown}
     userSelect="none"
+    overflow="hidden"
     _hover={{
       "& .trim-handle": { opacity: 1 },
-      "& .fade-handle": { opacity: 1 },
     }}
     zIndex={selected ? 2 : 1}
   >
@@ -127,54 +128,9 @@ const ComponentBlock = ({
         onTrimEndMouseDown(e);
       }}
     />
-
-    {/* Fade in (top-left) */}
-    <Box
-      className="fade-handle"
-      position="absolute"
-      top="-1px"
-      left="-1px"
-      w="14px"
-      h="12px"
-      opacity={0}
-      cursor="pointer"
-      transition="opacity 0.1s"
-      title="Fade in"
-      onClick={(e) => { e.stopPropagation(); onFadeIn(); }}
-    >
-      <Box
-        w={0} h={0}
-        borderLeft="14px solid rgba(45,212,191,0.8)"
-        borderBottom="12px solid transparent"
-      />
-      <Text position="absolute" top="-1px" left="2px" fontSize="8px" color="white" fontWeight="bold">F</Text>
-    </Box>
-
-    {/* Fade out (top-right) */}
-    <Box
-      className="fade-handle"
-      position="absolute"
-      top="-1px"
-      right="-1px"
-      w="14px"
-      h="12px"
-      opacity={0}
-      cursor="pointer"
-      transition="opacity 0.1s"
-      title="Fade out"
-      onClick={(e) => { e.stopPropagation(); onFadeOut(); }}
-    >
-      <Box
-        w={0} h={0}
-        borderRight="14px solid rgba(45,212,191,0.8)"
-        borderBottom="12px solid transparent"
-        position="absolute"
-        right={0}
-      />
-      <Text position="absolute" top="-1px" right="2px" fontSize="8px" color="white" fontWeight="bold">F</Text>
-    </Box>
   </Box>
-);
+  );
+};
 
 type Props = {
   zoom?: number;
@@ -185,6 +141,7 @@ const TimelineEditor = ({ zoom = 1 }: Props) => {
   const isDraggingRuler = useRef(false);
   const dragState = useRef<DragState | null>(null);
   const [hoverFrame, setHoverFrame] = useState<number | null>(null);
+  const [trackWidth, setTrackWidth] = useState(TIMELINE_REFERENCE_TRACK_WIDTH_PX);
 
   const {
     timeline,
@@ -194,24 +151,42 @@ const TimelineEditor = ({ zoom = 1 }: Props) => {
     select,
     moveComponent,
     addComponent,
-    addKeyframe,
-    patchComponent,
     trimComponentStart,
     trimComponentEnd,
     removeComponent,
   } = useTimeline();
 
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const updateTrackWidth = () => {
+      setTrackWidth(Math.max(el.clientWidth - LABEL_WIDTH, 200));
+    };
+
+    updateTrackWidth();
+    const observer = new ResizeObserver(updateTrackWidth);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   const totalFrames = totalDurationFrames(timeline);
-  const pxPerFrame = getPxPerFrame(zoom);
+  const pxPerFrame = getPxPerFrame(zoom, trackWidth);
   const paddedFrames = totalFrames + FPS * EXTRA_SECONDS;
   const widthPx = timelineWidthPx(paddedFrames, pxPerFrame);
+
+  const frameToLeftPx = useCallback(
+    (frame: number) => LABEL_WIDTH + frame * pxPerFrame,
+    [pxPerFrame]
+  );
 
   const frameFromClientX = useCallback(
     (clientX: number) => {
       const el = scrollRef.current;
       if (!el) return 0;
       const rect = el.getBoundingClientRect();
-      const x = clientX - rect.left + el.scrollLeft;
+      const x = clientX - rect.left + el.scrollLeft - LABEL_WIDTH;
+      if (x < 0) return 0;
       return Math.max(0, Math.min(totalFrames - 1, Math.round(x / pxPerFrame)));
     },
     [totalFrames, pxPerFrame]
@@ -422,57 +397,6 @@ const TimelineEditor = ({ zoom = 1 }: Props) => {
     [timeline.lanes]
   );
 
-  const handleFadeIn = useCallback(
-    (componentId: string) => {
-      const fadeDuration = FADE_DURATION;
-      const lane = timeline.lanes.find((l) =>
-        l.components.some((c) => c.id === componentId)
-      );
-      const component = lane?.components.find((c) => c.id === componentId);
-      if (!component) return;
-
-      const start = component.startFrame;
-      const existing = component.keyframes ?? [];
-      const filtered = existing.filter(
-        (k) => k.frame < start || k.frame > start + fadeDuration
-      );
-      patchComponent(componentId, {
-        keyframes: [
-          ...filtered,
-          { id: uuid(), frame: start, divStyles: { opacity: "0" } },
-          { id: uuid(), frame: start + fadeDuration, divStyles: { opacity: "1" } },
-        ].sort((a, b) => a.frame - b.frame),
-      });
-    },
-    [timeline.lanes, patchComponent]
-  );
-
-  const handleFadeOut = useCallback(
-    (componentId: string) => {
-      const fadeDuration = FADE_DURATION;
-      const lane = timeline.lanes.find((l) =>
-        l.components.some((c) => c.id === componentId)
-      );
-      const component = lane?.components.find((c) => c.id === componentId);
-      if (!component) return;
-
-      const end = component.startFrame + component.duration;
-      const start = end - fadeDuration;
-      const existing = component.keyframes ?? [];
-      const filtered = existing.filter(
-        (k) => k.frame < start || k.frame > end
-      );
-      patchComponent(componentId, {
-        keyframes: [
-          ...filtered,
-          { id: uuid(), frame: start, divStyles: { opacity: "1" } },
-          { id: uuid(), frame: end, divStyles: { opacity: "0" } },
-        ].sort((a, b) => a.frame - b.frame),
-      });
-    },
-    [timeline.lanes, patchComponent]
-  );
-
   const handleTrimEndDragStart = useCallback(
     (componentId: string, laneId: string, e: React.MouseEvent) => {
       e.stopPropagation();
@@ -527,25 +451,39 @@ const TimelineEditor = ({ zoom = 1 }: Props) => {
             top={0}
             bg="bg.surface"
             zIndex={3}
-            onMouseDown={handleRulerMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
           >
-            {Array.from({ length: Math.ceil(paddedFrames / FPS) + 1 }).map((_, sec) => (
-              <Box
-                key={sec}
-                position="absolute"
-                left={`${sec * FPS * pxPerFrame}px`}
-                h="100%"
-                borderLeft="1px solid"
-                borderColor="border.subtle"
-                pl={1}
-              >
-                <Text fontSize="10px" color="text.muted">
-                  {sec}s
-                </Text>
-              </Box>
-            ))}
+            <Box
+              w={`${LABEL_WIDTH}px`}
+              flexShrink={0}
+              borderRight="1px solid"
+              borderColor="border.subtle"
+            />
+            <Box
+              position="relative"
+              flex={1}
+              h="100%"
+              minW={`${widthPx}px`}
+              cursor="pointer"
+              onMouseDown={handleRulerMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseLeave={handleMouseLeave}
+            >
+              {Array.from({ length: Math.ceil(paddedFrames / FPS) + 1 }).map((_, sec) => (
+                <Box
+                  key={sec}
+                  position="absolute"
+                  left={`${sec * FPS * pxPerFrame}px`}
+                  h="100%"
+                  borderLeft="1px solid"
+                  borderColor="border.subtle"
+                  pl={1}
+                >
+                  <Text fontSize="10px" color="text.muted">
+                    {sec}s
+                  </Text>
+                </Box>
+              ))}
+            </Box>
           </Flex>
 
           {/* Ghost pinhead */}
@@ -554,7 +492,7 @@ const TimelineEditor = ({ zoom = 1 }: Props) => {
               position="absolute"
               top={`${RULER_HEIGHT}px`}
               bottom={0}
-              left={`${hoverFrame * pxPerFrame}px`}
+              left={`${frameToLeftPx(hoverFrame)}px`}
               w="2px"
               bg="teal.400"
               zIndex={2}
@@ -568,7 +506,7 @@ const TimelineEditor = ({ zoom = 1 }: Props) => {
             position="absolute"
             top={`${RULER_HEIGHT}px`}
             bottom={0}
-            left={`${playheadFrame * pxPerFrame}px`}
+            left={`${frameToLeftPx(playheadFrame)}px`}
             w="2px"
             bg="teal.400"
             zIndex={3}
@@ -587,16 +525,8 @@ const TimelineEditor = ({ zoom = 1 }: Props) => {
                 position="relative"
                 borderBottom="1px solid"
                 borderColor="border.subtle"
-                onMouseDown={(e) => {
-                  if (e.target === e.currentTarget) {
-                    select({ kind: "lane", id: lane.id });
-                    seekFromClientX(e.clientX);
-                  }
-                }}
-                onMouseMove={(e) => setHoverFrame(frameFromClientX(e.clientX))}
-                onMouseLeave={() => setHoverFrame(null)}
               >
-                {/* Lane label sticky left */}
+                {/* Lane label — select lane only, no playhead seek */}
                 <Flex
                   position="sticky"
                   left={0}
@@ -609,14 +539,32 @@ const TimelineEditor = ({ zoom = 1 }: Props) => {
                   borderColor="border.subtle"
                   zIndex={1}
                   flexShrink={0}
+                  cursor="default"
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                    select({ kind: "lane", id: lane.id });
+                  }}
                 >
                   <Text fontSize="xs" color="text.muted" noOfLines={1}>
                     {lane.name}
                   </Text>
                 </Flex>
 
-                {/* Lane content area */}
-                <Box position="relative" flex={1} h="100%" minW={`${widthPx}px`}>
+                {/* Lane content area — clips and playhead scrubbing */}
+                <Box
+                  position="relative"
+                  flex={1}
+                  h="100%"
+                  minW={`${widthPx}px`}
+                  onMouseDown={(e) => {
+                    if (e.target === e.currentTarget) {
+                      select({ kind: "lane", id: lane.id });
+                      seekFromClientX(e.clientX);
+                    }
+                  }}
+                  onMouseMove={(e) => setHoverFrame(frameFromClientX(e.clientX))}
+                  onMouseLeave={() => setHoverFrame(null)}
+                >
                   {lane.components.map((component) => {
                     const leftPx = component.startFrame * pxPerFrame;
                     const wPx = component.duration * pxPerFrame;
@@ -671,8 +619,6 @@ const TimelineEditor = ({ zoom = 1 }: Props) => {
                         onMouseDown={(e) => handleComponentDragStart(component.id, lane.id, e)}
                         onTrimStartMouseDown={(e) => handleTrimStartDragStart(component.id, lane.id, e)}
                         onTrimEndMouseDown={(e) => handleTrimEndDragStart(component.id, lane.id, e)}
-                        onFadeIn={() => handleFadeIn(component.id)}
-                        onFadeOut={() => handleFadeOut(component.id)}
                       />
                     );
                   })}
